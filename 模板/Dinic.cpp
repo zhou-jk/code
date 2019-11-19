@@ -7,7 +7,7 @@ const int INF=1061109567;
 struct Edge
 {
     int to,val,next;
-} edge[200001];
+}edge[200001];
 int cur[10001],head[10001],cnt=1;
 int n,m,s,t;
 void add_edge(int u,int v,int w)
@@ -40,10 +40,10 @@ bool bfs()
     }
     return dep[t]!=-1;
 }
-int dfs(int u,int flow)
+long long dfs(int u,int flow)
 {
     if(u==t) return flow;
-    int used=0;
+    long long used=0;
     for(int i=cur[u];i;i=edge[i].next)
     {
         cur[u]=i;
@@ -59,9 +59,9 @@ int dfs(int u,int flow)
     if(used==0) dep[u]=-1;
     return used;
 }
-int dinic()
+long long dinic()
 {
-    int res=0;
+    long long res=0;
     while(bfs())
     {
         memcpy(cur,head,sizeof(head));
@@ -79,6 +79,6 @@ int main()
         add_edge(x,y,z);
         add_edge(y,x,0);
     }
-    printf("%d",dinic());
+    printf("%lld",dinic());
     return 0;
 }
