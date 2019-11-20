@@ -31,7 +31,6 @@ void dfs(int u)
     else if(!s.empty()) s.pop(); 
     return;
 }
-
 int main()
 {
     scanf("%d",&n);
