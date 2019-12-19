@@ -1,48 +1,62 @@
-#include <cstdio>
-#include <cstring>
-#include <iostream>
-#include <cmath>
+#include<iostream>
+#include<cstdio>
 using namespace std;
-const int maxn=100010;
-const int N=50000;
-int n;
-struct Node
+const int N=100001,M=50001;
+int n,tot;
+double K[N],B[N];
+int lazy[N<<2];
+double f(int i,int x)
 {
-    int sk,sb;
-}tree[N<<2];
-char str[10];
-void update(int i,int l,int r,double k,double b)
+    return K[i]*(x-1)+B[i];
+}
+void update(int i,int l,int r,int t)
 {
-    if(tree[i].sk*l+tree[i].sb<k*l+b&&tree[i].sk*r+tree[i].sb<k*r+b)
+    if(l==r)
     {
-        tree[i].sk=k,tree[i].sb=b;
+        if(f(t,l)>f(lazy[i],l)) lazy[i]=t;
         return;
     }
-    if(tree[i].sk*l+tree[i].sb>=k*l+b&&tree[i].sk*r+tree[i].sb>=k*r+b) return;
     int mid=(l+r)/2;
-    update(i*2,l,mid,k,b);
-    update(i*2+1,mid+1,r,k,b);
+    if(K[t]>K[lazy[i]])
+    {
+        if(f(t,mid)>f(lazy[i],mid)) update(i*2,l,mid,lazy[i]),lazy[i]=t;
+        else update(i*2+1,mid+1,r,t);
+    }
+    if(K[t]<K[lazy[i]])
+    {
+        if(f(t,mid)>f(lazy[i],mid)) update(i*2+1,mid+1,r,lazy[i]),lazy[i]=t;
+        else update(i*2,l,mid,t);
+    }
     return;
 }
-double query(int i,int l,int r,int k)
+double query(int i,int l,int r,int t)
 {
+    if(l==r) return f(lazy[i],t);
     int mid=(l+r)/2;
-    double res=k*tree[i].sk+tree[i].sb;
-    if(l==r) return res;
-    if(k<=mid) res=max(res,query(i*2,l,mid,k));
-    else res=max(res,query(i*2+1,mid+1,r,k));
-    return res;
+    double ans=f(lazy[i],t);
+    if(t<=mid) ans=max(ans,query(i*2,l,mid,t));
+    if(t>mid)  ans=max(ans,query(i*2+1,mid+1,r,t));
+    return ans;
 }
 int main()
 {
     scanf("%d",&n);
-    int c;
-    double k,b;
-    while(n--)
+    for(int i=1;i<=n;i++)
     {
-        scanf("%s",str);
-        if(str[0]=='Q') scanf("%d",&c),printf("%d\n",int(floor(query(1,1,N,c)/100)));
-        else  scanf("%lf%lf",&k,&b),update(1,1,N,b,k-b);
+        string s;
+        cin>>s;
+        if(s=="Project")
+        {
+            tot++;
+            scanf("%lf%lf",&B[tot],&K[tot]);
+            update(1,1,M,tot);
+        }
+        else if(s=="Query")
+        {
+            int x;
+            scanf("%d",&x);
+            printf("%d\n",(int)(query(1,1,M,x)/100));
+        }
     }
     return 0;
 }

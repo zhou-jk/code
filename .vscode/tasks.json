@@ -62,7 +62,10 @@
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}/${fileBasenameNoExtension}",
+                "-std=c++11",
+                "-Wall",
+                "-O2"
             ],
             "options": {
                 "cwd": "/usr/bin"
