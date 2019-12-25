@@ -1,28 +1,58 @@
-#include<bits/stdc++.h>
+#include<iostream>
+#include<cstdio>
 using namespace std;
-
-template<typename T>
-void read(T &x)
-{
-    x=0;int f=1;char ch=getchar();
-    for(;!isdigit(ch);ch=getchar()) if(ch=='-') f=-f;
-    for(;isdigit(ch);ch=getchar()) x=x*10+ch-'0';x*=f;
-}
-template<typename T>
-void print(T x)
-{
-    if(x<0) putchar('-'),x=-x;
-    if(!x) return ;print(x/10),putchar(x%10+48);
-}
-template<typename T>
-void write(T x) {if(!x) putchar('0');else print(x);putchar('\n');}
-
-const int maxn = 3e5+10;
-const long long INF = 123456789123456789;
-
+const int N=100005;
+const long long INF=123456789123456789;
 int n,m;
-long long dis[maxn];
-int w[maxn];
+struct Edge
+{
+    int to,val,next;
+}edge[N<<1];
+int head[N],cnt;
+void add_edge(int u,int v,int w)
+{
+    cnt++;
+    edge[cnt].to=v;
+    edge[cnt].val=w;
+    edge[cnt].next=head[u];
+    head[u]=cnt;
+    return;
+}
+int fa[N],dep[N],size[N],son[N];
+long long dis[N];
+void dfs1(int u,int father)
+{
+    fa[u]=father;
+    dep[u]=dep[father]+1;
+    size[u]=1;
+    for(int i=head[u];i;i=edge[i].next)
+    {
+        int v=edge[i].to;
+        if(v==father) continue;
+        dis[v]=dis[u]+edge[i].val;
+        dfs1(v,u);
+        size[u]+=size[v];
+        if(size[son[u]]<size[v]) son[u]=v;
+    }
+    return;
+}
+int top[N],dfn[N],Index;
+int w[N];
+void dfs2(int u,int father)
+{
+    top[u]=father;
+    dfn[u]=++Index;
+    w[Index]=u;
+    if(!son[u]) return;
+    dfs2(son[u],father);
+    for(int i=head[u];i;i=edge[i].next)
+    {
+        int v=edge[i].to;
+        if(v==fa[u]||v==son[u]) continue;
+        dfs2(v,v);
+    }
+    return;
+}
 long long f(long long x,long long k,long long b)
 {
     return k*x+b;
@@ -34,7 +64,7 @@ struct Segment_Tree
         int l,r;
         long long k,b;
         long long Min;
-    }tree[maxn<<2];
+    }tree[N<<2];
     void push_up(int i)
     {
         tree[i].Min=min(tree[i].Min,min(tree[i*2].Min,tree[i*2+1].Min));
@@ -53,34 +83,28 @@ struct Segment_Tree
     }
     void modify(int i,long long k,long long b)
     {
-        if(tree[i].b==INF)
+        int mid=(tree[i].l+tree[i].r)/2;
+        long long lt=f(dis[w[tree[i].l]],tree[i].k,tree[i].b),rt=f(dis[w[tree[i].r]],tree[i].k,tree[i].b);
+        long long lp=f(dis[w[tree[i].l]],k,b),rp=f(dis[w[tree[i].r]],k,b);
+        if(lp>=lt&&rp>=rt) return;
+        if(lp<=lt&&rp<=rt)
         {
             tree[i].k=k,tree[i].b=b;
-            tree[i].Min=min(tree[i].Min,min(f(dis[w[tree[i].l]],k,b),f(dis[w[tree[i].r]],k,b)));
+            tree[i].Min=min(tree[i].Min,min(lp,rp));
             return;
         }
-        if(tree[i].l==tree[i].r)
+        double x=(double)(tree[i].b-b)/(k-tree[i].k);
+        if(x<=dis[w[mid]])
         {
-            if(f(dis[w[tree[i].l]],k,b)<f(dis[w[tree[i].l]],tree[i].k,tree[i].b))
-            {
-                tree[i].k=k,tree[i].b=b;
-                tree[i].Min=f(dis[w[tree[i].l]],k,b);
-            }
-            return;
-        }
-        int mid=(tree[i].l+tree[i].r)/2;
-        if(k<tree[i].k)
-        {
-            if(f(dis[w[mid]],k,b)<f(dis[w[mid]],tree[i].k,tree[i].b)) modify(i*2,tree[i].k,tree[i].b),tree[i].k=k,tree[i].b=b;
-            else modify(i*2+1,k,b);
-        }
-        if(tree[i].k<k)
-        {
-            if(f(dis[w[mid]],k,b)<f(dis[w[mid]],tree[i].k,tree[i].b)) modify(i*2+1,tree[i].k,tree[i].b),tree[i].k=k,tree[i].b=b;
+            if(lp>lt) modify(i*2,tree[i].k,tree[i].b),tree[i].k=k,tree[i].b=b;
             else modify(i*2,k,b);
         }
+        else 
+        {
+            if(lp>lt) modify(i*2+1,k,b);
+            else modify(i*2+1,tree[i].k,tree[i].b),tree[i].k=k,tree[i].b=b;
+        }
         tree[i].Min=min(tree[i].Min,min(f(dis[w[tree[i].l]],k,b),f(dis[w[tree[i].r]],k,b)));
-        tree[i].Min=min(tree[i].Min,min(f(dis[w[tree[i].l]],tree[i].k,tree[i].b),f(dis[w[tree[i].r]],tree[i].k,tree[i].b)));
         push_up(i);
         return;
     }
@@ -99,94 +123,78 @@ struct Segment_Tree
     long long query(int i,int l,int r)
     {
         if(l<=tree[i].l&&tree[i].r<=r) return tree[i].Min;
-        long long ans=min(f(dis[w[max(l,tree[i].l)]],tree[i].k,tree[i].b),f(dis[w[min(tree[i].r,r)]],tree[i].k,tree[i].b));
-        if(tree[i].b==INF) ans=INF;
-        if(l<=tree[i*2].r) ans=min(ans,query(i*2,l,r));
-        if(r>=tree[i*2+1].l) ans=min(ans,query(i*2+1,l,r));
-        return ans;
+        long long res=min(f(dis[w[max(l,tree[i].l)]],tree[i].k,tree[i].b),f(dis[w[min(tree[i].r,r)]],tree[i].k,tree[i].b));
+        if(tree[i].b==INF) res=INF;
+        if(l<=tree[i*2].r) res=min(res,query(i*2,l,r));
+        if(r>=tree[i*2+1].l) res=min(res,query(i*2+1,l,r));
+        return res;
     }
 }T;
-int dfn[maxn],hs[maxn],top[maxn],sz[maxn],dfn_cnt,dep[maxn],fa[maxn];
-struct Edge{int to,next,w;}edge[maxn<<1];
-int head[maxn],cnt;
-void add(int u,int v,int w) {edge[++cnt]=(Edge){v,head[u],w},head[u]=cnt;}
-void ins(int u,int v,int w) {add(u,v,w),add(v,u,w);}
-
-void dfs(int x,int father)
+int lca(int u,int v)
 {
-    fa[x]=father,dep[x]=dep[father]+1,sz[x]=1;
-    for(int i=head[x];i;i=edge[i].next)
-        if(edge[i].to!=father)
-        {
-            dis[edge[i].to]=dis[x]+edge[i].w;
-            dfs(edge[i].to,x);
-            sz[x]+=sz[edge[i].to];
-            if(sz[hs[x]]<sz[edge[i].to]) hs[x]=edge[i].to;
-        }
-}
-
-void dfs2(int x,int father)
-{
-    top[x]=father;
-    dfn[x]=++dfn_cnt;w[dfn_cnt]=x;
-    if(!hs[x]) return;
-    dfs2(hs[x],father);
-    for(int i=head[x];i;i=edge[i].next)
-        if(edge[i].to!=fa[x]&&edge[i].to!=hs[x]) dfs2(edge[i].to,edge[i].to);
-}
-int lca(int x,int y)
-{
-    while(top[x]!=top[y])
+    while(top[u]!=top[v])
     {
-        if(dep[top[x]]<dep[top[y]]) swap(x,y);
-        x=fa[top[x]];
-    }if(dep[x]>dep[y]) swap(x,y);return x;
+        if(dep[top[u]]<dep[top[v]]) swap(u,v);
+        u=fa[top[u]];
+    }
+    if(dep[u]>dep[v]) swap(u,v);
+    return u;
 }
-
-long long query(int x,int y)
+long long query(int u,int v)
 {
-    long long ans=INF;
-    while(top[x]!=top[y])
+    long long res=INF;
+    while(top[u]!=top[v])
     {
-        if(dep[top[x]]<dep[top[y]]) swap(x,y);
-        ans=min(ans,T.query(1,dfn[top[x]],dfn[x]));
-        x=fa[top[x]];
-    }if(dep[x]>dep[y]) swap(x,y);
-    ans=min(ans,T.query(1,dfn[x],dfn[y]));
-    return ans;
+        if(dep[top[u]]<dep[top[v]]) swap(u,v);
+        res=min(res,T.query(1,dfn[top[u]],dfn[u]));
+        u=fa[top[u]];
+    }
+    if(dep[u]>dep[v]) swap(u,v);
+    res=min(res,T.query(1,dfn[u],dfn[v]));
+    return res;
 }
-
-void update(int x,int t,long long k,long long b)
+void update(int u,int v,long long k,long long b)
 {
-    while(top[x]!=top[t])
+    while(top[u]!=top[v])
     {
-        if(dep[top[x]]<dep[top[t]]) swap(x,t);
-        T.update(1,dfn[top[x]],dfn[x],k,b);
-        x=fa[top[x]];
-    }T.update(1,dfn[t],dfn[x],k,b);
+        if(dep[top[u]]<dep[top[v]]) swap(u,v);
+        T.update(1,dfn[top[u]],dfn[u],k,b);
+        u=fa[top[u]];
+    }
+    if(dep[u]>dep[v]) swap(u,v);
+    T.update(1,dfn[u],dfn[v],k,b);
+    return;
 }
-void solve(int s,int t,long long a,long long b)
+void solve(int u,int v,long long a,long long b)
 {
-    int l=lca(s,t);
-    // y=a*dis+b=a*(dis[s]-dis[x])+b -> k=-a,b=a*dis[s]+b
-    update(s,l,-a,a*dis[s]+b);
-    // y=a*dis+b=a*(dis[x]+dis[s]-2*dis[l])+b -> k=a,b=a*(dis[s]-2*dis[l])+b
-    update(t,l,a,a*(dis[s]-2*dis[l])+b);
+    int LCA=lca(u,v);
+    update(u,LCA,-a,a*dis[u]+b);
+    update(v,LCA,a,a*(dis[u]-2*dis[LCA])+b);
+    return;
 }
-signed main()
+int main()
 {
-    read(n),read(m);
-    for(int i=1,x,y,z;i<n;i++) read(x),read(y),read(z),ins(x,y,z);
-    dfs(1,0);
+    scanf("%d%d",&n,&m);
+    for(int i=1;i<n;i++)
+    {
+        int x,y,z;
+        scanf("%d%d%d",&x,&y,&z);
+        add_edge(x,y,z);
+        add_edge(y,x,z);
+    }
+    dfs1(1,0);
     dfs2(1,1);
     T.build(1,1,n);
     for(int i=1;i<=m;i++)
     {
         int op,s,t,a,b;
-        read(op),read(s),read(t);
-        if(op==1) read(a),read(b),solve(s,t,a,b);
-        else write(query(s,t));
+        scanf("%d%d%d",&op,&s,&t);
+        if(op==1)
+        {
+            scanf("%d%d",&a,&b);
+            solve(s,t,a,b);
+        }
+        else printf("%lld\n",query(s,t));
     }
     return 0;
 }
-
