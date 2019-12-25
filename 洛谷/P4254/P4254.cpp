@@ -27,6 +27,15 @@ void update(int i,int l,int r,int t)
         if(f(t,mid)>f(lazy[i],mid)) update(i*2+1,mid+1,r,lazy[i]),lazy[i]=t;
         else update(i*2,l,mid,t);
     }
+    if(K[t]==K[lazy[i]])
+    {
+        if(B[t]>B[lazy[i]])
+        {
+            update(i*2,l,mid,t);
+            update(i*2+1,mid+1,r,t);
+            lazy[i]=t;
+        }
+    }
     return;
 }
 double query(int i,int l,int r,int t)
