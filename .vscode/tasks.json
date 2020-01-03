@@ -63,7 +63,7 @@
                 "${file}",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}",
-                "-std=c++11",
+                "-std=c++17",
                 "-Wall",
                 "-O2"
             ],
