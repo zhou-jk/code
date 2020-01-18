@@ -1,0 +1,2 @@
+Luogu 不同素数之和
+UVA-1213 Sum of Different Primes

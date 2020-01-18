@@ -1,0 +1,2 @@
+Luogu P1596
+USACO10OCT Lake Counting

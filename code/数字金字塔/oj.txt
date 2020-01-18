@@ -1,0 +1,5 @@
+信息学奥赛一本通（C++版） 1258
+数字三角形
+    IOI1994-D1T1
+    Luogu-P1994
+USACO1.5 Number Triangles

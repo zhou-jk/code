@@ -1,0 +1,12 @@
+*.exe
+*.dll
+*.o
+*.bak
+*.in
+*.out
+!fp___.out
+.def
+.s
+Cpp/.vscode/ipch/*
+python/.mypy_cache/*
+code/.vscode/ipch/*
