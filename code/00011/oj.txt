@@ -1,2 +1,0 @@
-Luogu-P2926 拍头
-USACO08DEC Patting Heads

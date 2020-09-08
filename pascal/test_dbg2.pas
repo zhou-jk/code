@@ -1,3 +1,0 @@
-{$APPTYPE GUI}
-begin
-end.

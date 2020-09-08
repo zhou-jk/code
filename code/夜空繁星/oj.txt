@@ -1,5 +1,0 @@
-star
-    YZ-19.1.21-T3
-19_1_* 无文件操作
-    Luogu-P2749
-    USACO5.1 Starry Night

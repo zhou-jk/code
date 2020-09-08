@@ -1,3 +1,0 @@
-program dollars;
-var
-  i,

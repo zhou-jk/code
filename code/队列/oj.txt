@@ -1,4 +1,0 @@
-queue
-    YZ-19.1.21-T1
-19_1
-    CF353D Queue

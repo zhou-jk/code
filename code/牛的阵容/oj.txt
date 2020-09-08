@@ -1,2 +1,0 @@
-Luogu-P3029
-USACO11NOV Cow Lineup

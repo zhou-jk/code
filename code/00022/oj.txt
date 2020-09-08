@@ -1,3 +1,0 @@
-﻿YZ-19.4.20-T2 路人 akali
-Luogu-P1879 玉米田
-USACO06NOV Corn Fields

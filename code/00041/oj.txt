@@ -1,2 +1,0 @@
-CF1150C Prefix Sum Primes
-CF1149A Prefix Sum Primes

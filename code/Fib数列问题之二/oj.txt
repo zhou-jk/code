@@ -1,2 +1,0 @@
-PrayerOJ 1380 Fibonacci第n项
-计蒜客 数论和基础数学

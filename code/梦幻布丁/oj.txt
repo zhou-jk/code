@@ -1,5 +1,0 @@
-19-2_启发式合并
-    Luogu-P3201
-pudding
-    YZ19.2.15
-    HNOI2009

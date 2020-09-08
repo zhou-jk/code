@@ -1,3 +1,0 @@
-PrayerOJ 1959
-YBT1346 亲戚(relation)
-Luogu-P1551
