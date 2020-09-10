@@ -1,74 +1,58 @@
 #include<iostream>
 #include<cstdio>
 #include<vector>
-#include<map>
 #include<algorithm>
 using namespace std;
-const int N=55,M=(1<<18)+5;
-int n,m,k,s,t;
-int a[N];
-bool book[N];
-long long C[N][N];
-long long sum[N][N];
-void init(int n=50)
+const int N=100005;
+int n,m;
+int d[N];
+int id[N];
+vector<pair<int,int> >G[N];
+int col[N];
+int ans[N<<1];
+void draw(int u)
 {
-	for(int i=0;i<=n;i++)
-	{
-		C[i][0]=1;
-		for(int j=1;j<=i;j++)
-			C[i][j]=C[i-1][j]+C[i-1][j-1];
-	}
-	for(int i=0;i<=n;i++)
-		for(int j=1;j<=n;j++)
-			sum[i][j]=sum[i][j-1]+C[i][j];
+	if(col[u]) return;
+	for(auto [v,i]:G[u])
+		if(col[v]==0&&d[u]==d[v])
+		{
+			col[u]=1,col[v]=2;
+			ans[i]=d[u];
+			return;
+		}
+	for(auto [v,i]:G[u])
+		if(col[v])
+		{
+			col[u]=col[v]==1?2:1;
+			ans[i]=d[u];
+			return;
+		}
+	printf("-1");
+	exit(0);
 	return;
 }
 int main()
 {
-	scanf("%d%d%d%d",&n,&k,&s,&t);
-	init();
-	m=18;
+	scanf("%d%d",&n,&m);
 	for(int i=1;i<=n;i++)
-		scanf("%d",&a[i]);
-	for(int i=m-1;i>=0;i--)
+		scanf("%d",&d[i]),id[i]=i;
+	sort(id+1,id+n+1,[=](const int &x,const int &y){return d[x]<d[y];});
+	for(int i=1;i<=m;i++)
 	{
-		if((s&(1<<i))==1&&(t&(1<<i))==0)
-		{
-			printf("0");
-			return 0;
-		}
-		if((s&(1<<i))==(t&(1<<i)))
-		{
-			for(int j=1;j<=n;j++)
-				if((s&(1<<i))!=(a[j]&(1<<i))) book[j]=true;
-		}
+		int x,y;
+		scanf("%d%d",&x,&y);
+		G[x].push_back(make_pair(y,i));
+		G[y].push_back(make_pair(x,i));
 	}
-	vector<int>v;
 	for(int i=1;i<=n;i++)
-		if(!book[i]) v.push_back(a[i]);
-	n=0;
-	for(int u:v)
-		a[++n]=u;
-	long long ans=0;
-	for(int state=0;state<(1<<m);state++)
-	{
-		bool flag=false;
-		for(int i=0;i<m;i++)
-			if((state&(1<<i))&&(s&(1<<i))==(t&(1<<i)))
-			{
-				flag=true;
-				break;
-			}
-		if(flag) continue;
-		map<int,int>cnt;
-		for(int i=1;i<=n;i++)
-			cnt[a[i]&state]++;
-		long long res=0;
-		for(auto [val,num]:cnt)
-			res+=sum[num][k];
-		if(__builtin_popcount(state)&1) ans-=res;
-		else ans+=res;
-	}
-	printf("%lld",ans);
+		draw(id[i]);
+	for(int i=1;i<=m;i++)
+		if(!ans[i]) ans[i]=1e9;
+	for(int i=1;i<=n;i++)
+		if(col[i]==1) printf("W");
+		else if(col[i]==2) printf("B");
+	printf("\n");
+	for(int i=1;i<=m;i++)
+		printf("%d\n",ans[i]);
 	return 0;
 }

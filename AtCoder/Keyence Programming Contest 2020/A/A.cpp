@@ -1,11 +1,11 @@
 #include<iostream>
 #include<cstdio>
 using namespace std;
-const int N=25;
-char s[N];
+int h,w,n;
 int main()
 {
-	scanf("%s",s+1);
-	printf("%c%c%c",s[1],s[2],s[3]);
+	scanf("%d%d%d",&h,&w,&n);
+	if(h<w) swap(h,w);
+	printf("%d",(n+h-1)/h);
 	return 0;
 }

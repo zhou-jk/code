@@ -1,52 +1,46 @@
 #include<iostream>
 #include<cstdio>
+#include<cmath>
 #include<cstring>
 #include<algorithm>
 using namespace std;
-const int N=(1<<9)+5,M=100005;
-int n,m,Q;
-int v[N*N],w[N*N];
-long long f[N][M];
-bool book[N*N];
-long long ans;
-void dfs(int u,long long ret,long long sum)
-{
-	if(ret<0) return;
-	if(u<=(1<<9))
-	{
-		ans=max(ans,sum+f[u][ret]);
-		return;
-	}
-	book[u]=true;
-	dfs(u/2,ret-w[u],sum+v[u]);
-	book[u]=false;
-	dfs(u/2,ret,sum);
-	return;
-}
-void solve()
-{
-	int u,L;
-	scanf("%d%d",&u,&L);
-	ans=0;
-	dfs(u,L,0);
-	printf("%lld\n",ans);
-	return;
-}
+const int N=20;
+const int INF=1061109567;
+int n;
+int a[N],b[N];
+int f[1<<N][N];
 int main()
 {
 	scanf("%d",&n);
-	for(int i=1;i<=n;i++)
-		scanf("%d%d",&v[i],&w[i]);
-	m=100000;
-	for(int i=1;i<=min(1<<9,n);i++)
+	for(int i=0;i<n;i++)
+		scanf("%d",&a[i]);
+	for(int i=0;i<n;i++)
+		scanf("%d",&b[i]);
+	memset(f,63,sizeof(f));
+	f[0][0]=0;
+	for(int s=1;s<(1<<n);s++)
 	{
-		int p=i/2;
-		for(int j=0;j<=m;j++)
-			if(j>=w[i]) f[i][j]=max(f[p][j],f[p][j-w[i]]+v[i]);
-			else f[i][j]=f[p][j];
+		int t=__builtin_popcount(s);
+		for(int i=0;i<n;i++)
+			if(s&(1<<i))
+			{
+				int v=(abs(t-(i+1))&1)?b[i]:a[i];
+				int num=0;
+				for(int j=i+1;j<n;j++)
+					if(s&(1<<j)) num++;
+				for(int j=0;j<n;j++)
+					if((s^(1<<i))==0) f[s][i]=min(f[s][i],f[s^(1<<i)][j]+num);
+					else if((s^(1<<i))&(1<<j))
+					{
+						int vt=(abs(t-1-(j+1))&1)?b[j]:a[j];
+						if(vt<=v) f[s][i]=min(f[s][i],f[s^(1<<i)][j]+num);
+					}
+			}
 	}
-	scanf("%d",&Q);
-	while(Q--)
-		solve();
+	int ans=INF;
+	for(int i=0;i<n;i++)
+		ans=min(ans,f[(1<<n)-1][i]);
+	if(ans>=INF) printf("-1");
+	else printf("%d",ans);
 	return 0;
 }
