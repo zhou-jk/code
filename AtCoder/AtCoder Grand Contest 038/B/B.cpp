@@ -1,63 +1,37 @@
 #include<iostream>
 #include<cstdio>
-#include<cmath>
 using namespace std;
-const int N=200005;
-int n,k;
-int p[N];
+const int N=300005;
+const int MOD=998244353;
+int n;
+char s[N];
 int a[N];
-pair<int,int> Min[N][20],Max[N][20];
-void init()
+int cnt[7];
+void add(int &x,int &y)
 {
-	for(int i=1;i<=n;i++)
-		Min[i][0]=Max[i][0]=make_pair(p[i],i);
-	for(int j=1;(1<<j)<=n;j++)
-		for(int i=1;i+(1<<j)-1<=n;i++)
-			Min[i][j]=min(Min[i][j-1],Min[i+(1<<(j-1))][j-1]);
-	for(int j=1;(1<<j)<=n;j++)
-		for(int i=1;i+(1<<j)-1<=n;i++)
-			Max[i][j]=max(Max[i][j-1],Max[i+(1<<(j-1))][j-1]);
+	if(x>=1) x--,y++;
 	return;
-}
-int querymin(int l,int r)
-{
-	int k=log2(r-l+1);
-	return min(Min[l][k],Min[r-(1<<k)+1][k]).second;
-}
-int querymax(int l,int r)
-{
-	int k=log2(r-l+1);
-	return max(Max[l][k],Max[r-(1<<k)+1][k]).second;
 }
 int main()
 {
-	scanf("%d%d",&n,&k);
-	for(int i=1;i<=n;i++)
-		scanf("%d",&p[i]);
-	for(int i=1;i<=n;i++)
-		a[i]=p[i-1]>p[i];
-	for(int i=1;i<=n;i++)
-		a[i]+=a[i-1];
-	init();
-	int ans=0;
-	bool flag=false;
-	for(int r=k;r<=n;r++)
+	scanf("%d",&n);
+	scanf("%s",s+1);
+	for(int i=1;i<=n*3;i++)
+		if(s[i]=='R') a[i]=1;
+		else if(s[i]=='G') a[i]=2;
+		else if(s[i]=='B') a[i]=3;
+	long long ans=1;
+	for(int i=1;i<=n*3;i++)
 	{
-		int l=r-k+1;
-		if(a[l]==a[r])
-		{
-			flag=true;
-			continue;
-		}
-		if(l==1)
-		{
-			ans++;
-			continue;
-		}
-		if(querymin(l-1,r-1)==l-1&&querymax(l,r)==r) continue;
-		ans++;
+		if(cnt[7-a[i]]>=1) ans=ans*cnt[7-a[i]]%MOD,cnt[7-a[i]]--;
+		else if(a[i]==1&&cnt[2]+cnt[3]>=1) ans=ans*(cnt[2]+cnt[3])%MOD,add(cnt[2],cnt[4]),add(cnt[3],cnt[5]);
+		else if(a[i]==2&&cnt[1]+cnt[3]>=1) ans=ans*(cnt[1]+cnt[3])%MOD,add(cnt[1],cnt[4]),add(cnt[3],cnt[6]);
+		else if(a[i]==3&&cnt[1]+cnt[2]>=1) ans=ans*(cnt[1]+cnt[2])%MOD,add(cnt[1],cnt[5]),add(cnt[2],cnt[6]);
+		else cnt[a[i]]++;
+		//R G B RG RB GB
 	}
-	if(flag) ans++;
-	printf("%d",ans);
+	for(int i=1;i<=n;i++)
+		ans=ans*i%MOD;
+	printf("%lld",ans);
 	return 0;
 }
