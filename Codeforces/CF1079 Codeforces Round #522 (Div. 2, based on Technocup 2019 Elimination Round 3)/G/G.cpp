@@ -52,7 +52,7 @@ int solve(int u)
 	int tot=0;
 	for(int j=Lg[n*3];j>=0;j--)
 	{
-		Segment_Tree::Node nxt= T[j].query(1,1,3*n,l,r);
+		Segment_Tree::Node nxt=T[j].query(1,1,3*n,l,r);
 		int nl=nxt.Min,nr=nxt.Max;
 		if(nr-nl+1<n)
 		{
