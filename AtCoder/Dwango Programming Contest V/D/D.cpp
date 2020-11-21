@@ -30,12 +30,6 @@ int getsum3(int x1,int y1,int x2,int y2)
 bool check2(int x,int y,int b)
 {
 	return getsum2(x+b+1,y+b+1,x+D-1,y+D-1)==0;
-//	return getsum2(x,0,x+b,D-1)+getsum2(0,y,D-1,y+b)>=getsum2(0,0,D-1,D-1);
-//    int d1 = getsum2(max(0,b + x - D + 1),max(0,b + y - D + 1),x - 1,y - 1);
-//    int d2 = getsum2(x + b + 1,y + b + 1,D - 1,D - 1);
-//    int d3 = getsum2(max(0,b + x - D + 1),y + b + 1,x - 1,D - 1);
-//    int d4 = getsum2(x + b + 1,max(0,b + y - D + 1),D - 1,y - 1);
-//    return !d1 && !d2 && !d3 && !d4;
 }
 bool check3(int x,int y,int b)
 {
