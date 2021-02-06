@@ -22,15 +22,23 @@ int ksm(int a,int b)
 	return res;
 }
 int W[2][N<<1];
-void init(int n=4000000)
+void init_omega(int n=4000000)
 {
 	for(int len=1;len<=n;len<<=1)
 	{
-		int w=ksm(::g,(MOD-1)/len),iw=ksm(w,MOD-2);
+		int w=ksm(g,(MOD-1)/len),iw=ksm(w,MOD-2);
 		W[0][len]=W[1][len]=1;
 		for(int k=1;k<len;k++)
 			W[0][len+k]=1LL*W[0][len+k-1]*w%MOD,W[1][len+k]=1LL*W[1][len+k-1]*iw%MOD;
 	}
+	return;
+}
+int inv[N];
+void init_inv(int n=4000000)
+{
+	inv[1]=1;
+	for(int i=2;i<=n;i++)
+		inv[i]=1LL*(MOD-MOD/i)*inv[MOD%i]%MOD;
 	return;
 }
 typedef vector<int> Poly;
@@ -60,6 +68,37 @@ Poly operator-(const Poly &a,const Poly &b)
 	}
 	return c;
 }
+Poly operator+(const Poly &F,const int &x)
+{
+	Poly f=F;
+	f[0]+=x;
+	if(f[0]>=MOD) f[0]-=MOD;
+	return f;
+}
+Poly operator+(const int &x,const Poly &F)
+{
+	Poly f=F;
+	f[0]+=x;
+	if(f[0]>=MOD) f[0]-=MOD;
+	return f;
+}
+Poly operator-(const Poly &F,const int &x)
+{
+	Poly f=F;
+	f[0]-=x;
+	if(f[0]<0) f[0]+=MOD;
+	return f;
+}
+Poly operator-(const int &x,const Poly &F)
+{
+	Poly f=F;
+	int n=f.size()-1;
+	for(int i=0;i<=n;i++)
+		f[i]=MOD-f[i];
+	f[0]+=x;
+	if(f[0]>=MOD) f[0]-=MOD;
+	return f;
+}
 Poly ntt(const Poly &F,const Poly &G,const function<int(int,int)> &mul)
 {
 	Poly f=F,g=G;
@@ -74,7 +113,7 @@ Poly ntt(const Poly &F,const Poly &G,const function<int(int,int)> &mul)
 		rev[i]=rev[i/2]>>1;
 		if(i&1) rev[i]|=n/2;
 	}
-	static const int BIT=17;
+	static const int BIT=15;
 	function<void(Poly &)> dft=[=](Poly &F)
 	{
 		int n=F.size();
@@ -140,6 +179,16 @@ Poly ntt(const Poly &F,const Poly &G,const function<int(int,int)> &mul)
 }
 Poly operator*(const Poly &F,const Poly &G)
 {
+	static const int LEN=100;
+	int n=F.size()-1,m=G.size()-1;
+	if(n<=LEN&&m<=LEN)
+	{
+		Poly res(n+m+1);
+		for(int i=0;i<=n;i++)
+			for(int j=0;j<=m;j++)
+				res[i+j]=(res[i+j]+1LL*F[i]*G[j])%MOD;
+		return res;
+	}
 	return ntt(F,G,[=](const int &x,const int &y){return 1LL*x*y%MOD;});
 }
 Poly operator*(const Poly &F,const int &x)
@@ -272,12 +321,8 @@ Poly inte_calc(const Poly &G)
 	Poly g=G;
 	int n=g.size()-1;
 	Poly f(n+2);
-	vector<int>inv(n+2);
-	inv[1]=1;
-	for(int i=2;i<=n+1;i++)
-		inv[i]=1LL*(MOD-MOD/i)*inv[MOD%i]%MOD;
-	for(int i=0;i<=n;i++)
-		f[i+1]=1LL*g[i]*inv[i+1]%MOD;
+	for(int i=1;i<=n+1;i++)
+		f[i]=1LL*g[i-1]*inv[i]%MOD;
 	return f;
 }
 Poly ln(const Poly &F)
@@ -301,9 +346,9 @@ Poly exp(const Poly &F)
 	for(int m=2;m<=n;m<<=1)
 	{
 		Poly t(f.begin(),f.begin()+m);
+		Poly s=g;
 		g.resize(m);
-		Poly s=t-ln(g)+(Poly){1};
-		g=g*s;
+		g=s*(t-ln(g)+(Poly){1});
 		g.resize(m);
 	}
 	g.resize(m+1);
@@ -323,13 +368,21 @@ Poly ksm(const Poly &F,const int &k)
 			break;
 		}
 	if(pos==-1) return g;
-	Poly a=f*getinv(g);
-	a.resize(n+1);
+	int mu=f[pos],invm=ksm(mu,MOD-2);
+	for(int i=0;i<=n-pos;i++)
+		f[i]=1LL*f[i+pos]*invm%MOD;
+	for(int i=n-pos+1;i<=n;i++)
+		f[i]=0;
 	g[pos]=0;
-	if(1LL*pos*k<=n) g[pos*k]=ksm(f[pos],k);
-	else return g;
-	g=g*exp(k*ln(a));
-	g.resize(n+1);
+	if(1LL*pos*k<=n||pos==0) 
+	{
+		g=exp(k*ln(f));
+		int v=ksm(mu,k);
+		for(int i=n;i>=pos*k;i--)
+			g[i]=1LL*g[i-pos*k]*v%MOD;
+		for(int i=pos*k-1;i>=0;i--)
+			g[i]=0;
+	}
 	return g;
 }
 bool isbig;
@@ -381,6 +434,15 @@ pair<int,int>read(const int &p1,const int &p2)
 	if(!flag) x={p1-x.first,p2-x.second};
 	return x;
 }
+int poly_calc(const Poly &F,const int &x)
+{
+	Poly f=F;
+	int n=f.size()-1;
+	int fc=1,res=0;
+	for(int i=0;i<=n;i++)
+		res=(res+1LL*f[i]*fc)%MOD,fc=1LL*fc*x%MOD;
+	return res;
+}
 Poly poly_eval(const Poly &F,const Poly &a)
 {
 	Poly f=F;
@@ -403,6 +465,13 @@ Poly poly_eval(const Poly &F,const Poly &a)
 	Poly res(m);
 	function<void(int,int,int,const Poly &)> solve_poly_eval=[&](int i,int l,int r,const Poly &f)
 	{
+		static const int LEN=64;
+		if(r-l+1<=LEN)
+		{
+			for(int i=l;i<=r;i++)
+				res[i]=poly_calc(f,a[i]);
+			return;
+		}
 		if(l==r)
 		{
 			res[l]=f[0];
