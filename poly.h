@@ -168,27 +168,17 @@ Poly ntt(const Poly &F,const Poly &G,const function<int(int,int)> &mul)
 		}
 		for(int i=0;i<n;i++)
 			F[i]=f[i]%MOD;
+		int invn=ksm(n,MOD-2);
+		for(int i=0;i<n;i++)
+			F[i]=1LL*F[i]*invn%MOD;
 		return;
 	};
 	idft(f);
-	Poly res(m+1);
-	int invn=ksm(n,MOD-2);
-	for(int i=0;i<=m;i++)
-		res[i]=1LL*f[i]*invn%MOD;
-	return res;
+	f.resize(m+1);
+	return f;
 }
 Poly operator*(const Poly &F,const Poly &G)
 {
-	static const int LEN=100;
-	int n=F.size()-1,m=G.size()-1;
-	if(n<=LEN&&m<=LEN)
-	{
-		Poly res(n+m+1);
-		for(int i=0;i<=n;i++)
-			for(int j=0;j<=m;j++)
-				res[i+j]=(res[i+j]+1LL*F[i]*G[j])%MOD;
-		return res;
-	}
 	return ntt(F,G,[=](const int &x,const int &y){return 1LL*x*y%MOD;});
 }
 Poly operator*(const Poly &F,const int &x)
@@ -530,4 +520,110 @@ Poly poly_inte(const vector<Point> &p)
 	};
 	solve_poly_inte(1,0,n);
 	return res[1];
+}
+Poly operator|(const Poly &F,const Poly &G)
+{
+	Poly f=F,g=G;
+	int m=max(f.size()-1,g.size()-1),n=1;
+	while(n<=m) n<<=1;
+	f.resize(n),g.resize(n);
+	static const int BIT=15;
+	function<void(Poly &)> fwt=[=](Poly &F)
+	{
+		int n=F.size();
+		for(int len=2;len<=n;len<<=1)
+			for(int i=0;i<n;i+=len)
+				for(int k=i;k<i+len/2;k++)
+					F[k+len/2]=(F[k+len/2]+F[k])%MOD;
+		return;
+	};
+	fwt(f);
+	fwt(g);
+	for(int i=0;i<n;i++)
+		f[i]=1LL*f[i]*g[i]%MOD;
+	function<void(Poly &)> ifwt=[=](Poly &F)
+	{
+		int n=F.size();
+		for(int len=2;len<=n;len<<=1)
+			for(int i=0;i<n;i+=len)
+				for(int k=i;k<i+len/2;k++)
+					F[k+len/2]=(F[k+len/2]-F[k]+MOD)%MOD;
+		return;
+	};
+	ifwt(f);
+	return f;
+}
+Poly operator&(const Poly &F,const Poly &G)
+{
+	Poly f=F,g=G;
+	int m=max(f.size()-1,g.size()-1),n=1;
+	while(n<=m) n<<=1;
+	f.resize(n),g.resize(n);
+	static const int BIT=15;
+	function<void(Poly &)> fwt=[=](Poly &F)
+	{
+		int n=F.size();
+		for(int len=2;len<=n;len<<=1)
+			for(int i=0;i<n;i+=len)
+				for(int k=i;k<i+len/2;k++)
+					F[k]=(F[k]+F[k+len/2])%MOD;
+		return;
+	};
+	fwt(f);
+	fwt(g);
+	for(int i=0;i<n;i++)
+		f[i]=1LL*f[i]*g[i]%MOD;
+	function<void(Poly &)> ifwt=[=](Poly &F)
+	{
+		int n=F.size();
+		for(int len=2;len<=n;len<<=1)
+			for(int i=0;i<n;i+=len)
+				for(int k=i;k<i+len/2;k++)
+					F[k]=(F[k]-F[k+len/2]+MOD)%MOD;
+		return;
+	};
+	ifwt(f);
+	return f;
+}
+Poly operator^(const Poly &F,const Poly &G)
+{
+	Poly f=F,g=G;
+	int m=max(f.size()-1,g.size()-1),n=1;
+	while(n<=m) n<<=1;
+	f.resize(n),g.resize(n);
+	function<void(Poly &)> fwt=[=](Poly &F)
+	{
+		int n=F.size();
+		for(int len=2;len<=n;len<<=1)
+			for(int i=0;i<n;i+=len)
+				for(int k=i;k<i+len/2;k++)
+				{
+					int l=F[k],r=F[k+len/2];
+					F[k]=(l+r)%MOD;
+					F[k+len/2]=(l-r+MOD)%MOD;
+				}
+		return;
+	};
+	fwt(f);
+	fwt(g);
+	for(int i=0;i<n;i++)
+		f[i]=1LL*f[i]*g[i]%MOD;
+	function<void(Poly &)> ifwt=[=](Poly &F)
+	{
+		int n=F.size();
+		for(int len=2;len<=n;len<<=1)
+			for(int i=0;i<n;i+=len)
+				for(int k=i;k<i+len/2;k++)
+				{
+					int l=F[k],r=F[k+len/2];
+					F[k]=(l+r)%MOD;
+					F[k+len/2]=(l-r+MOD)%MOD;
+				}
+		int invn=ksm(n,MOD-2);
+		for(int i=0;i<n;i++)
+			F[i]=1LL*F[i]*invn%MOD;
+		return;
+	};
+	ifwt(f);
+	return f;
 }
