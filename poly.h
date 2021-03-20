@@ -375,55 +375,6 @@ Poly ksm(const Poly &F,const int &k)
 	}
 	return g;
 }
-bool isbig;
-Poly ksm(const Poly &F,const int &k1,const int &k2)
-{
-	Poly f=F;
-	int n=f.size()-1;
-	Poly g(n+1);
-	int pos=-1;
-	for(int i=0;i<=n;i++)
-		if(f[i]>0)
-		{
-			g[i]=f[i];
-			pos=i;
-			break;
-		}
-	if(pos==-1) return g;
-	int mu=f[pos],invm=ksm(mu,MOD-2);
-	for(int i=0;i<=n-pos;i++)
-		f[i]=1LL*f[i+pos]*invm%MOD;
-	for(int i=n-pos+1;i<=n;i++)
-		f[i]=0;
-	g[pos]=0;
-	if((!isbig&&1LL*pos*k1<=n)||pos==0) 
-	{
-		g=exp(k2*ln(f));
-		int v=ksm(mu,k1);
-		for(int i=n;i>=pos*k1;i--)
-			g[i]=1LL*g[i-pos*k1]*v%MOD;
-		for(int i=pos*k1-1;i>=0;i--)
-			g[i]=0;
-	}
-	return g;
-}
-pair<int,int>read(const int &p1,const int &p2)
-{
-	char ch;
-	bool flag=true;
-	pair<int,int>x={0,0};
-	for(ch=getchar();!isdigit(ch);ch=getchar())
-		if(ch=='-') flag=false;
-	while(isdigit(ch))
-	{
-		if(1LL*x.first*10+ch-'0'>=MOD-1) isbig=true;
-		x.first=(1LL*x.first*10+ch-'0')%p1;
-		x.second=(1LL*x.second*10+ch-'0')%p2;
-		ch=getchar();
-	}
-	if(!flag) x={p1-x.first,p2-x.second};
-	return x;
-}
 int poly_calc(const Poly &F,const int &x)
 {
 	Poly f=F;
@@ -455,13 +406,6 @@ Poly poly_eval(const Poly &F,const Poly &a)
 	Poly res(m);
 	function<void(int,int,int,const Poly &)> solve_poly_eval=[&](int i,int l,int r,const Poly &f)
 	{
-		static const int LEN=64;
-		if(r-l+1<=LEN)
-		{
-			for(int i=l;i<=r;i++)
-				res[i]=poly_calc(f,a[i]);
-			return;
-		}
 		if(l==r)
 		{
 			res[l]=f[0];
