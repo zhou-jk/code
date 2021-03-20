@@ -205,7 +205,7 @@ Poly operator-(const Poly &a,const Poly &b)
 		c[i]=(f[i]-g[i]+MOD)%MOD;
 	return c;
 }
-Poly ntt(const vector<int> &F,const vector<int> &G,const function<Int(const Int &,const Int &)> &mul)
+Poly ntt(const Poly &F,const Poly &G,const function<Int(const Int &,const Int &)> &mul)
 {
 	int n=F.size()-1,m=G.size()-1;
 	vector<Int> f(n+1),g(m+1);
