@@ -85,11 +85,6 @@ struct Int
 		*this=*this/rhs;
 		return *this;
 	}
-	Int operator-()const
-	{
-		Int c=(Int){MOD1-x1,MOD2-x2,MOD3-x3};
-		return c;
-	}
 	int to_int(int P=MOD)const
 	{
 		static const int INV12=ksm(MOD1,MOD2-2,MOD2),INV123=ksm(1LL*MOD1*MOD2%MOD3,MOD3-2,MOD3);
@@ -103,6 +98,70 @@ struct Int
 	{
 		Int c=(Int){ksm(rhs.x1,MOD1-2,MOD1),ksm(rhs.x2,MOD2-2,MOD2),ksm(rhs.x3,MOD3-2,MOD3)};
 		return c;
+	}
+	Int operator+(const int &rhs)const
+	{
+		return *this+(Int){rhs,rhs,rhs};
+	}
+	Int operator+(const long long &rhs)const
+	{
+		return *this+(Int){rhs,rhs,rhs};
+	}
+	Int operator-(const int &rhs)const
+	{
+		return *this-(Int){rhs,rhs,rhs};
+	}
+	Int operator-(const long long &rhs)const
+	{
+		return *this-(Int){rhs,rhs,rhs};
+	}
+	Int operator*(const int &rhs)const
+	{
+		return *this*(Int){rhs,rhs,rhs};
+	}
+	Int operator*(const long long &rhs)const
+	{
+		return *this*(Int){rhs,rhs,rhs};
+	}
+	Int operator/(const int &rhs)const
+	{
+		return *this*getinv((Int){rhs,rhs,rhs});
+	}
+	Int operator/(const long long &rhs)const
+	{
+		return *this*getinv((Int){rhs,rhs,rhs});
+	}
+	friend Int operator+(const int &lhs,const Int &rhs)
+	{
+		return rhs+lhs;
+	}
+	friend Int operator+(const long long &lhs,const Int &rhs)
+	{
+		return rhs+lhs;
+	}
+	friend Int operator-(const int &lhs,const Int &rhs)
+	{
+		return (Int){lhs,lhs,lhs}-rhs;
+	}
+	friend Int operator-(const long long &lhs,const Int &rhs)
+	{
+		return (Int){lhs,lhs,lhs}-rhs;
+	}
+	friend Int operator*(const int &lhs,const Int &rhs)
+	{
+		return rhs*lhs;
+	}
+	friend Int operator*(const long long &lhs,const Int &rhs)
+	{
+		return rhs*lhs;
+	}
+	friend Int operator/(const int &lhs,const Int &rhs)
+	{
+		return (Int){lhs,lhs,lhs}*getinv(rhs);
+	}
+	friend Int operator/(const long long &lhs,const Int &rhs)
+	{
+		return (Int){lhs,lhs,lhs}*getinv(rhs);
 	}
 };
 Int W[2][N<<1];
@@ -125,7 +184,7 @@ void init_inv(int n=1<<19)
 		inv[i]=1LL*(MOD-MOD/i)*inv[MOD%i]%MOD;
 	return;
 }
-typedef vector<Int> Poly;
+typedef vector<int> Poly;
 Poly operator+(const Poly &a,const Poly &b)
 {
 	Poly f=a,g=b;
@@ -133,7 +192,7 @@ Poly operator+(const Poly &a,const Poly &b)
 	f.resize(n),g.resize(n);
 	Poly c(n);
 	for(int i=0;i<n;i++)
-		c[i]=f[i]+g[i];
+		c[i]=(f[i]+g[i])%MOD;
 	return c;
 }
 Poly operator-(const Poly &a,const Poly &b)
@@ -143,40 +202,17 @@ Poly operator-(const Poly &a,const Poly &b)
 	f.resize(n),g.resize(n);
 	Poly c(n);
 	for(int i=0;i<n;i++)
-		c[i]=f[i]-g[i];
+		c[i]=(f[i]-g[i]+MOD)%MOD;
 	return c;
 }
-Poly operator+(const Poly &F,const int &x)
+Poly ntt(const vector<int> &F,const vector<int> &G,const function<Int(const Int &,const Int &)> &mul)
 {
-	Poly f=F;
-	f[0]+=x;
-	return f;
-}
-Poly operator+(const int &x,const Poly &F)
-{
-	Poly f=F;
-	f[0]+=x;
-	return f;
-}
-Poly operator-(const Poly &F,const int &x)
-{
-	Poly f=F;
-	f[0]-=x;
-	return f;
-}
-Poly operator-(const int &x,const Poly &F)
-{
-	Poly f=F;
-	int n=f.size()-1;
+	int n=F.size()-1,m=G.size()-1;
+	vector<Int> f(n+1),g(m+1);
 	for(int i=0;i<=n;i++)
-		f[i]=-f[i];
-	f[0]+=x;
-	return f;
-}
-Poly ntt(const Poly &F,const Poly &G,const function<Int(Int,Int)> &mul)
-{
-	Poly f=F,g=G;
-	int n=f.size()-1,m=g.size()-1;
+		f[i]=F[i];
+	for(int i=0;i<=m;i++)
+		g[i]=G[i];
 	m+=n,n=1;
 	while(n<=m) n<<=1;
 	f.resize(n);
@@ -187,10 +223,10 @@ Poly ntt(const Poly &F,const Poly &G,const function<Int(Int,Int)> &mul)
 		rev[i]=rev[i/2]>>1;
 		if(i&1) rev[i]|=n/2;
 	}
-	function<void(Poly &)> dft=[=](Poly &F)
+	function<void(vector<Int> &)> dft=[=](vector<Int> &F)
 	{
 		int n=F.size();
-		Poly f(n);
+		vector<Int> f(n);
 		for(int i=0;i<n;i++)
 			f[i]=F[rev[i]];
 		for(int len=2;len<=n;len<<=1)
@@ -210,10 +246,10 @@ Poly ntt(const Poly &F,const Poly &G,const function<Int(Int,Int)> &mul)
 	dft(g);
 	for(int i=0;i<n;i++)
 		f[i]=mul(f[i],g[i]);
-	function<void(Poly &)> idft=[=](Poly &F)
+	function<void(vector<Int> &)> idft=[=](vector<Int> &F)
 	{
 		int n=F.size();
-		Poly f(n);
+		vector<Int> f(n);
 		for(int i=0;i<n;i++)
 			f[i]=F[rev[i]];
 		for(int len=2;len<=n;len<<=1)
@@ -231,10 +267,11 @@ Poly ntt(const Poly &F,const Poly &G,const function<Int(Int,Int)> &mul)
 		return;
 	};
 	idft(f);
-	f.resize(m+1);
-	return f;
+	Poly res(m+1);
+	for(int i=0;i<=m;i++)
+		res[i]=f[i].to_int();
+	return res;
 }
-
 Poly operator*(const Poly &F,const Poly &G)
 {
 	return ntt(F,G,[=](const Int &x,const Int &y){return x*y;});
@@ -244,7 +281,7 @@ Poly operator*(const Poly &F,const int &x)
 	Poly f=F;
 	int n=f.size()-1;
 	for(int i=0;i<=n;i++)
-		f[i]=f[i]*x;
+		f[i]=1LL*f[i]*x%MOD;
 	return f; 
 }
 Poly operator*(const int &x,const Poly &F)
@@ -252,7 +289,7 @@ Poly operator*(const int &x,const Poly &F)
 	Poly f=F;
 	int n=f.size()-1;
 	for(int i=0;i<=n;i++)
-		f[i]=f[i]*x;
+		f[i]=1LL*f[i]*x%MOD;
 	return f; 
 }
 Poly getinv(const Poly &F)
@@ -262,12 +299,17 @@ Poly getinv(const Poly &F)
 	int n=1;
 	while(n<=m) n<<=1;
 	f.resize(n);
-	Poly g={getinv(f[0])};
+	Poly g={ksm(f[0],MOD-2)};
 	for(int m=2;m<=n;m<<=1)
 	{
 		Poly t(f.begin(),f.begin()+m);
-		g=ntt(t,g,[=](const Int &x,const Int &y){return y*2-y*y*x;});
+		Poly yyx=g*g;
+		yyx.resize(m);
+		yyx=yyx*t;
+		yyx.resize(m);
 		g.resize(m);
+		for(int i=0;i<m;i++)
+			g[i]=(g[i]*2LL-yyx[i]+MOD)%MOD;
 	}
 	g.resize(m+1);
 	return g;
@@ -303,7 +345,7 @@ Poly diff_calc(const Poly &F)
 	int n=f.size()-1;
 	Poly g(n);
 	for(int i=1;i<=n;i++)
-		g[i-1]=f[i]*i;
+		g[i-1]=1LL*f[i]*i%MOD;
 	return g;
 }
 Poly inte_calc(const Poly &G)
@@ -312,7 +354,7 @@ Poly inte_calc(const Poly &G)
 	int n=g.size()-1;
 	Poly f(n+2);
 	for(int i=1;i<=n+1;i++)
-		f[i]=g[i-1]*inv[i];
+		f[i]=1LL*g[i-1]*inv[i]%MOD;
 	return f;
 }
 Poly ln(const Poly &F)
@@ -325,22 +367,19 @@ Poly ln(const Poly &F)
 	g.resize(n+1);
 	return g;
 }
-Poly exp(const Poly &F)
+int main()
 {
-	Poly f=F;
-	int m=f.size()-1;
-	int n=1;
-	while(n<=m) n<<=1;
-	f.resize(n);
-	Poly g={1};
-	for(int m=2;m<=n;m<<=1)
-	{
-		Poly t(f.begin(),f.begin()+m);
-		Poly s=g;
-		g.resize(m);
-		g=s*(t-ln(g)+(Poly){1});
-		g.resize(m);
-	}
-	g.resize(m+1);
-	return g;
+	int n,m;
+	scanf("%d%d%d",&n,&m,&MOD);
+	init_omega();
+	init_inv();
+	Poly f(n+1),g(m+1);
+	for(int i=0;i<=n;i++)
+		scanf("%d",&f[i]);
+	for(int i=0;i<=m;i++)
+		scanf("%d",&g[i]);
+	Poly res=f*g;
+	for(int i=0;i<=n+m;i++)
+		printf("%d ",res[i]);
+	return 0;
 }
