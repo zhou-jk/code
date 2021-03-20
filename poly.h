@@ -471,7 +471,6 @@ Poly operator|(const Poly &F,const Poly &G)
 	int m=max(f.size()-1,g.size()-1),n=1;
 	while(n<=m) n<<=1;
 	f.resize(n),g.resize(n);
-	static const int BIT=15;
 	function<void(Poly &)> fwt=[=](Poly &F)
 	{
 		int n=F.size();
@@ -503,7 +502,6 @@ Poly operator&(const Poly &F,const Poly &G)
 	int m=max(f.size()-1,g.size()-1),n=1;
 	while(n<=m) n<<=1;
 	f.resize(n),g.resize(n);
-	static const int BIT=15;
 	function<void(Poly &)> fwt=[=](Poly &F)
 	{
 		int n=F.size();
