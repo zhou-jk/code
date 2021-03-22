@@ -21,12 +21,16 @@ int ksm(int a,int b)
 	}
 	return res;
 }
+int getinv(int x)
+{
+	return ksm(x,MOD-2);
+}
 int W[2][N<<1];
 void init_omega(int n=4000000)
 {
 	for(int len=1;len<=n;len<<=1)
 	{
-		int w=ksm(g,(MOD-1)/len),iw=ksm(w,MOD-2);
+		int w=ksm(g,(MOD-1)/len),iw=getinv(w);
 		W[0][len]=W[1][len]=1;
 		for(int k=1;k<len;k++)
 			W[0][len+k]=1LL*W[0][len+k-1]*w%MOD,W[1][len+k]=1LL*W[1][len+k-1]*iw%MOD;
@@ -110,8 +114,8 @@ Poly ntt(const Poly &F,const Poly &G,const function<int(int,int)> &mul)
 	vector<int>rev(n);
 	for(int i=0;i<n;i++)
 	{
-		rev[i]=rev[i/2]>>1;
-		if(i&1) rev[i]|=n/2;
+		rev[i]=rev[i>>1]>>1;
+		if(i&1) rev[i]|=n>>1;
 	}
 	static const int BIT=15;
 	function<void(Poly &)> dft=[=](Poly &F)
@@ -168,7 +172,7 @@ Poly ntt(const Poly &F,const Poly &G,const function<int(int,int)> &mul)
 		}
 		for(int i=0;i<n;i++)
 			F[i]=f[i]%MOD;
-		int invn=ksm(n,MOD-2);
+		int invn=getinv(n);
 		for(int i=0;i<n;i++)
 			F[i]=1LL*F[i]*invn%MOD;
 		return;
@@ -204,7 +208,7 @@ Poly getinv(const Poly &F)
 	int n=1;
 	while(n<=m) n<<=1;
 	f.resize(n);
-	Poly g={ksm(f[0],MOD-2)};
+	Poly g={getinv(f[0])};
 	for(int m=2;m<=n;m<<=1)
 	{
 		Poly t(f.begin(),f.begin()+m);
@@ -261,7 +265,7 @@ Poly sqrt(const Poly &F)
 	f.resize(n);
 	int g0=cipolla(f[0]);
 	Poly g={min(g0,MOD-g0)};
-	int inv2=ksm(2,MOD-2);
+	int inv2=getinv(2);
 	for(int m=2;m<=n;m<<=1)
 	{
 		Poly t(f.begin(),f.begin()+m);
@@ -358,7 +362,7 @@ Poly ksm(const Poly &F,const int &k)
 			break;
 		}
 	if(pos==-1) return g;
-	int mu=f[pos],invm=ksm(mu,MOD-2);
+	int mu=f[pos],invm=getinv(mu);
 	for(int i=0;i<=n-pos;i++)
 		f[i]=1LL*f[i+pos]*invm%MOD;
 	for(int i=n-pos+1;i<=n;i++)
@@ -447,7 +451,7 @@ Poly poly_inte(const vector<Point> &p)
 	Poly F=poly_eval(diff_calc(g[1]),x);
 	vector<int> a(n+1);
 	for(int i=0;i<=n;i++)
-		a[i]=1LL*p[i].y*ksm(F[i],MOD-2)%MOD;
+		a[i]=1LL*p[i].y*getinv(F[i])%MOD;
 	vector<Poly>res(n<<2);
 	function<void(int,int,int)> solve_poly_inte=[&](int i,int l,int r)
 	{
@@ -561,7 +565,7 @@ Poly operator^(const Poly &F,const Poly &G)
 					F[k]=(l+r)%MOD;
 					F[k+len/2]=(l-r+MOD)%MOD;
 				}
-		int invn=ksm(n,MOD-2);
+		int invn=getinv(n);
 		for(int i=0;i<n;i++)
 			F[i]=1LL*F[i]*invn%MOD;
 		return;
