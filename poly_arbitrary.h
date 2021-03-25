@@ -22,6 +22,10 @@ int ksm(int a,int b,int P=MOD)
 	}
 	return res;
 }
+int getinv(int x,int P=MOD)
+{
+	return ksm(x,P-2,P);
+}
 struct Int
 {
 	int x1,x2,x3;
@@ -62,7 +66,7 @@ struct Int
 	}
 	Int operator/(const Int &rhs)const
 	{
-		Int c=(Int){ksm(rhs.x1,MOD1-2,MOD1),ksm(rhs.x2,MOD2-2,MOD2),ksm(rhs.x3,MOD3-2,MOD3)};
+		Int c=(Int){1LL*x1*getinv(rhs.x1,MOD1),1LL*x2*getinv(rhs.x2,MOD2),1LL*x3*getinv(rhs.x3,MOD3)};
 		return c;
 	}
 	Int operator+=(const Int &rhs)
@@ -87,7 +91,7 @@ struct Int
 	}
 	int to_int(int P=MOD)const
 	{
-		static const int INV12=ksm(MOD1,MOD2-2,MOD2),INV123=ksm(1LL*MOD1*MOD2%MOD3,MOD3-2,MOD3);
+		static const int INV12=getinv(MOD1,MOD2),INV123=getinv(1LL*MOD1*MOD2%MOD3,MOD3);
 		int k1=1LL*(x2-x1%MOD2+MOD2)*INV12%MOD2;
 		long long x4=x1+1LL*k1*MOD1;
 		int k4=(x3-x4%MOD3+MOD3)%MOD3*INV123%MOD3;
@@ -96,7 +100,7 @@ struct Int
 	}
 	friend Int getinv(const Int &rhs)
 	{
-		Int c=(Int){ksm(rhs.x1,MOD1-2,MOD1),ksm(rhs.x2,MOD2-2,MOD2),ksm(rhs.x3,MOD3-2,MOD3)};
+		Int c=(Int){getinv(rhs.x1,MOD1),getinv(rhs.x2,MOD2),getinv(rhs.x3,MOD3)};
 		return c;
 	}
 	Int operator+(const int &rhs)const
@@ -261,7 +265,7 @@ Poly ntt(const Poly &F,const Poly &G,const function<Int(const Int &,const Int &)
 					f[k]=l+r;
 					f[k+len/2]=l-r;
 				}
-		Int invn=(Int){ksm(n,MOD1-2,MOD1),ksm(n,MOD2-2,MOD2),ksm(n,MOD3-2,MOD3)};
+		Int invn=getinv((Int){n,n,n});
 		for(int i=0;i<n;i++)
 			F[i]=f[i]*invn;
 		return;
@@ -299,7 +303,7 @@ Poly getinv(const Poly &F)
 	int n=1;
 	while(n<=m) n<<=1;
 	f.resize(n);
-	Poly g={ksm(f[0],MOD-2)};
+	Poly g={getinv(f[0])};
 	for(int m=2;m<=n;m<<=1)
 	{
 		Poly t(f.begin(),f.begin()+m);
@@ -366,20 +370,4 @@ Poly ln(const Poly &F)
 	g=inte_calc(g);
 	g.resize(n+1);
 	return g;
-}
-int main()
-{
-	int n,m;
-	scanf("%d%d%d",&n,&m,&MOD);
-	init_omega();
-	init_inv();
-	Poly f(n+1),g(m+1);
-	for(int i=0;i<=n;i++)
-		scanf("%d",&f[i]);
-	for(int i=0;i<=m;i++)
-		scanf("%d",&g[i]);
-	Poly res=f*g;
-	for(int i=0;i<=n+m;i++)
-		printf("%d ",res[i]);
-	return 0;
 }
