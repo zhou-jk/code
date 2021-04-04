@@ -13,8 +13,10 @@
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe",
                 "-std=c++17",
+                "-O2",
                 "-Wall",
-                "-O2"
+                "'-Wl,--stack=1234567890'"
+                
             ],
             "options": {
                 "cwd": "C:\\Program Files (x86)\\Dev-Cpp\\MinGW64/bin"
