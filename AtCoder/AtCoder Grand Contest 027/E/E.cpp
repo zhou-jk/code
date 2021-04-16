@@ -43,5 +43,6 @@ int main()
     for(int i=1;i<=n;i++)
         if((sum[n]-sum[i])%3==0) ans=(ans+f[i])%MOD;
     printf("%d",ans);
+    cout<<"myhmd";
     return 0;
 }
