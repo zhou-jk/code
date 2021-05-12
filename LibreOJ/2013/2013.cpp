@@ -1,5 +1,7 @@
 #include<iostream>
 #include<cstdio>
+#include<cmath>
+#include<cstring>
 #include<vector>
 using namespace std;
 struct Basis
@@ -115,3 +117,58 @@ public:
         return *this=*this+rhs;
     }
 };
+const int N=20005;
+int n,Q;
+long long a[N];
+vector<int>G[N];
+int dep[N];
+int fa[N][15];
+Basis f[N][15];
+void dfs(int u,int father)
+{
+    dep[u]=dep[father]+1;
+    fa[u][0]=father;
+    f[u][0].insert(a[father]);
+    for(int i=1;(1<<i)<=n;i++)
+        fa[u][i]=fa[fa[u][i-1]][i-1],f[u][i]=f[u][i-1]+f[fa[u][i-1]][i-1];
+    for(int v:G[u])
+    {
+        if(v==father) continue;
+        dfs(v,u);
+    }
+    return;
+}
+Basis query(int u,int v)
+{
+    Basis res;
+    res.insert(a[u]),res.insert(a[v]);
+    if(dep[u]<dep[v]) swap(u,v);
+    for(int i=log2(n);i>=0;i--)
+        if(dep[fa[u][i]]>=dep[v]) res.insert(f[u][i]),u=fa[u][i];
+    if(u==v) return res;
+    for(int i=log2(n);i>=0;i--)
+        if(fa[u][i]!=fa[v][i]) res.insert(f[u][i]+f[v][i]),u=fa[u][i],v=fa[v][i];
+    res.insert(a[fa[u][0]]);
+    return res;
+}
+int main()
+{
+    scanf("%d%d",&n,&Q);
+    for(int i=1;i<=n;i++)
+        scanf("%lld",&a[i]);
+    for(int i=1;i<n;i++)
+    {
+        int x,y;
+        scanf("%d%d",&x,&y);
+        G[x].emplace_back(y);
+        G[y].emplace_back(x);
+    }
+    dfs(1,0);
+    while(Q--)
+    {
+        int x,y;
+        scanf("%d%d",&x,&y);
+        printf("%lld\n",query(x,y).max_xor());
+    }
+    return 0;
+}

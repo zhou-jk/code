@@ -1,5 +1,6 @@
 #include<iostream>
 #include<cstdio>
+#include<cstring>
 #include<vector>
 using namespace std;
 struct Basis
@@ -26,13 +27,6 @@ public:
         b.clear();
         return;
     }
-    vector<long long>basis()const
-    {
-        vector<long long>c(b.size());
-        for(int i=0;i<(int)b.size();i++)
-            c[i]=a[b[i]];
-        return c;
-    }
     void insert(const long long &x)
     {
         cnt++;
@@ -55,13 +49,6 @@ public:
         for(int i=0;i<N;i++)
             if(a[i]) b.push_back(i);
         return;
-    }
-    Basis insert(const Basis &rhs)
-    {
-		vector<long long>c=rhs.basis();
-		for(int i=0;i<(int)c.size();i++)
-			insert(c[i]);
-        return *this;
     }
     int size()const
     {
@@ -91,27 +78,24 @@ public:
             if((x>>b[i])&1) res+=1LL<<i;
         return res;
     }
-    Basis operator + (const Basis &rhs)const
-    {
-        if(size()<rhs.size())
-        {
-            Basis c=rhs;
-            vector<long long>d=basis();
-            for(int i=0;i<(int)d.size();i++)
-                c.insert(d[i]);
-            return c;
-        }
-        else
-        {
-            Basis c=*this;
-            vector<long long>d=rhs.basis();
-            for(int i=0;i<(int)d.size();i++)
-                c.insert(d[i]);
-            return c;
-        }
-    }
-    Basis operator += (const Basis &rhs)
-    {
-        return *this=*this+rhs;
-    }
 };
+const int N=100005;
+const int MOD=10086;
+int n,Q;
+int a[N];
+int main()
+{
+    scanf("%d",&n);
+    for(int i=1;i<=n;i++)
+        scanf("%d",&a[i]);
+    scanf("%d",&Q);
+    Basis lb;
+    for(int i=1;i<=n;i++)
+        lb.insert(a[i]);
+    int ans=lb.rank(Q)%MOD;
+    for(int i=1;i<=n-lb.size();i++)
+        ans=ans*2%MOD;
+    ans=(ans+1)%MOD;
+    printf("%d",ans);
+    return 0;
+}
