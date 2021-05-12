@@ -172,11 +172,11 @@ public:
             for(int j=cur;j<=n;j++)
                 if(C[j][i].val()>C[pos][i].val()) pos=j;
             if(C[pos][i].val()==0) return 0;
-            if(cur!=pos) swap(C[cur],C[pos]),res=-res;
+            if(pos!=cur) swap(C[pos],C[cur]),res=-res;
             for(int j=cur+1;j<=n;j++)
                 while(C[j][i].val())
                 {
-                    if(C[j][i].val()<C[cur][i].val()) swap(C[cur],C[j]),res=-res;
+                    if(C[j][i].val()<C[cur][i].val()) swap(C[j],C[cur]),res=-res;
                     int d=C[j][i].val()/C[cur][i].val();
                     for(int k=i;k<=m;k++)
                         C[j][k]-=C[cur][k]*d;
