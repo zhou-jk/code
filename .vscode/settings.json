@@ -75,6 +75,7 @@
         "shared_mutex": "cpp",
         "variant": "cpp",
         "queue": "cpp",
-        "ORDERS.C": "cpp"
+        "ORDERS.C": "cpp",
+        "cassert": "cpp"
     }
 }
