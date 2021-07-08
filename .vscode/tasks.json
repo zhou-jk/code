@@ -15,7 +15,7 @@
                 "-std=c++17",
                 "-O2",
                 "-Wall",
-                "'-Wl,--stack=1234567890'"
+                "-Wl,--stack=1234567890"
             ],
             "options": {
                 "cwd": "C:\\Program Files (x86)\\Dev-Cpp\\MinGW64\\bin"
