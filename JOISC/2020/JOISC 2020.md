@@ -55,7 +55,250 @@ int main()
 
 #### 美味しい美味しいハンバーグ / Hamburg Steak
 
-阿拉丁题
+阿拉丁题，具体可以看 zyy 的博客，不想写题解了。
+
+---
+
+```cpp
+#include<iostream>
+#include<cstdio>
+#include<cassert>
+#include<set>
+#include<stack>
+#include<vector>
+#include<numeric>
+#include<algorithm>
+using namespace std;
+const int N=200005;
+const int INF=1061109567;
+int n,k;
+int l[N],d[N],r[N],u[N];
+bool vis[N];
+pair<int,int>p[5];
+void dfs(int step)
+{
+    if(step>k)
+    {
+        for(int i=1;i<=n;i++)
+            if(!vis[i]) return;
+        for(int i=1;i<=k;i++)
+            printf("%d %d\n",p[i].first,p[i].second);
+        exit(0);
+    }
+    int maxl=0,minr=INF,maxd=0,minu=INF;
+    for(int i=1;i<=n;i++)
+        if(!vis[i])
+        {
+            maxl=max(maxl,l[i]);
+            minr=min(minr,r[i]);
+            maxd=max(maxd,d[i]);
+            minu=min(minu,u[i]);
+        }
+    vector<int>pos;
+    int x,y;
+    x=maxl,y=maxd;
+    for(int i=1;i<=n;i++)
+        if(!vis[i])
+        {
+            if(l[i]<=x&&x<=r[i]&&d[i]<=y&&y<=u[i]) pos.emplace_back(i),vis[i]=true;
+        }
+    p[step]={x,y};
+    dfs(step+1);
+    for(int i:pos)
+        vis[i]=false;
+    x=maxl,y=minu;
+    for(int i=1;i<=n;i++)
+        if(!vis[i])
+        {
+            if(l[i]<=x&&x<=r[i]&&d[i]<=y&&y<=u[i]) pos.emplace_back(i),vis[i]=true;
+        }
+    p[step]={x,y};
+    dfs(step+1);
+    for(int i:pos)
+        vis[i]=false;
+    x=minr,y=maxd;
+    for(int i=1;i<=n;i++)
+        if(!vis[i])
+        {
+            if(l[i]<=x&&x<=r[i]&&d[i]<=y&&y<=u[i]) pos.emplace_back(i),vis[i]=true;
+        }
+    p[step]={x,y};
+    dfs(step+1);
+    for(int i:pos)
+        vis[i]=false;
+    x=minr,y=minu;
+    for(int i=1;i<=n;i++)
+        if(!vis[i])
+        {
+            if(l[i]<=x&&x<=r[i]&&d[i]<=y&&y<=u[i]) pos.emplace_back(i),vis[i]=true;
+        }
+    p[step]={x,y};
+    dfs(step+1);
+    for(int i:pos)
+        vis[i]=false;
+    return;
+}
+int c[N];
+int id[N][2],cnt;
+int pos[N][2];
+vector<tuple<int,int,int,int>>L,R,D,U;
+vector<int>G[N*10];
+int dfn[N*10],low[N*10],Index;
+int bel[N*10],tot;
+void tarjan(int u)
+{
+    static bool vis[N*10];
+    static stack<int>s;
+    dfn[u]=low[u]=++Index;
+    s.emplace(u);
+    vis[u]=true;
+    for(int v:G[u])
+        if(!dfn[v])
+        {
+            tarjan(v);
+            low[u]=min(low[u],low[v]);
+        }
+        else if(vis[v]) low[u]=min(low[u],dfn[v]);
+    if(dfn[u]==low[u])
+    {
+        tot++;
+        while(s.top()!=u)
+        {
+            bel[s.top()]=tot;
+            vis[s.top()]=false;
+            s.pop();
+        }
+        bel[u]=tot;
+        vis[u]=false;
+        s.pop();
+    }
+    return;
+}
+int val[N];
+int main()
+{
+    scanf("%d%d",&n,&k);
+    for(int i=1;i<=n;i++)
+        scanf("%d%d%d%d",&l[i],&d[i],&r[i],&u[i]);
+    dfs(1);
+    if(k==4)
+    {
+        int maxl=*max_element(l+1,l+n+1),minr=*min_element(r+1,r+n+1),maxd=*max_element(d+1,d+n+1),minu=*min_element(u+1,u+n+1);
+        assert(minr<=maxl&&minu<=maxd);
+        for(int i=1;i<=n;i++)
+        {
+            if(l[i]<=minr&&minr<=r[i]) c[i]++;
+            if(l[i]<=maxl&&maxl<=r[i]) c[i]++;
+            if(d[i]<=minu&&minu<=u[i]) c[i]++;
+            if(d[i]<=maxd&&maxd<=u[i]) c[i]++;
+            if(c[i]>=3) continue;
+            assert(c[i]>0);
+            id[i][0]=++cnt,id[i][1]=++cnt;
+            if(c[i]==1)
+            {
+                G[id[i][1]].emplace_back(id[i][0]);
+                if(l[i]<=minr&&minr<=r[i]) L.emplace_back(d[i],u[i],id[i][0],id[i][1]),pos[i][0]=1;
+                else if(l[i]<=maxl&&maxl<=r[i]) R.emplace_back(d[i],u[i],id[i][0],id[i][1]),pos[i][0]=2;
+                else if(d[i]<=minu&&minu<=u[i]) D.emplace_back(l[i],r[i],id[i][0],id[i][1]),pos[i][0]=3;
+                else if(d[i]<=maxd&&maxd<=u[i]) U.emplace_back(l[i],r[i],id[i][0],id[i][1]),pos[i][0]=4;
+                else assert(false);
+            }
+            if(c[i]==2)
+            {
+                for(int j=1;j<=4;j++)
+                    for(int k=j+1;k<=4;k++)
+                    {
+                        bool fj=false;
+                        if(j==1) fj=l[i]<=minr&&minr<=r[i];
+                        else if(j==2) fj=l[i]<=maxl&&maxl<=r[i];
+                        else if(j==3) fj=d[i]<=minu&&minu<=u[i];
+                        else if(j==4) fj=d[i]<=maxd&&maxd<=u[i];
+                        bool fk=false;
+                        if(k==1) fk=l[i]<=minr&&minr<=r[i];
+                        else if(k==2) fk=l[i]<=maxl&&maxl<=r[i];
+                        else if(k==3) fk=d[i]<=minu&&minu<=u[i];
+                        else if(k==4) fk=d[i]<=maxd&&maxd<=u[i];
+                        if(fj&&fk)
+                        {
+                            if(j==1) L.emplace_back(d[i],u[i],id[i][0],id[i][1]),pos[i][0]=1;
+                            else if(j==2) R.emplace_back(d[i],u[i],id[i][0],id[i][1]),pos[i][0]=2;
+                            else if(j==3) D.emplace_back(l[i],r[i],id[i][0],id[i][1]),pos[i][0]=3;
+                            else if(j==4) U.emplace_back(l[i],r[i],id[i][0],id[i][1]),pos[i][0]=4;
+                            else assert(false);
+                            if(k==1) L.emplace_back(d[i],u[i],id[i][1],id[i][0]),pos[i][1]=1;
+                            else if(k==2) R.emplace_back(d[i],u[i],id[i][1],id[i][0]),pos[i][1]=2;
+                            else if(k==3) D.emplace_back(l[i],r[i],id[i][1],id[i][0]),pos[i][1]=3;
+                            else if(k==4) U.emplace_back(l[i],r[i],id[i][1],id[i][0]),pos[i][1]=4;
+                            else assert(false);
+                        }
+                    }
+            }
+        }
+        for(auto a:{L,R,D,U})
+        {
+            vector<int>to(a.size()),from(a.size());
+            for(int i=0;i<(int)a.size();i++)
+                to[i]=++cnt,from[i]=++cnt;
+            sort(a.begin(),a.end(),[=](const tuple<int,int,int,int> &x,const tuple<int,int,int,int> &y){return get<1>(x)<get<1>(y);});
+            for(int i=0;i<(int)a.size();i++)
+            {
+                G[to[i]].emplace_back(get<3>(a[i]));
+                G[get<2>(a[i])].emplace_back(from[i]);
+                if(i>0)
+                {
+                    G[to[i]].emplace_back(to[i-1]);
+                    G[from[i-1]].emplace_back(from[i]);
+                }
+            }
+            vector<int>posr(a.size());
+            for(int i=0;i<(int)posr.size();i++)
+                posr[i]=get<1>(a[i]);
+            for(int i=0;i<(int)a.size();i++)
+            {
+                auto [li,ri,i1,i0]=a[i];
+                if(i>0)
+                {
+                    int j=lower_bound(posr.begin(),posr.begin()+i,li)-posr.begin()-1;
+                    if(j>=0)
+                    {
+                        G[i1].emplace_back(to[j]);
+                        G[from[j]].emplace_back(i0);
+                    }
+                }
+            }
+        }
+        for(int i=1;i<=cnt;i++)
+            if(!dfn[i]) tarjan(i);
+        for(int i=1;i<=n;i++)
+            if(c[i]==1||c[i]==2) assert(bel[id[i][0]]!=bel[id[i][1]]);
+        for(int i=1;i<=n;i++)
+            if(c[i]==1||c[i]==2) val[i]=bel[id[i][1]]<bel[id[i][0]];
+        int ld=0,lu=INF,rd=0,ru=INF;
+        int dl=0,dr=INF,ul=0,ur=INF;
+        for(int i=1;i<=n;i++)
+            if(c[i]==1)
+            {
+                if(pos[i][0]==1) ld=max(ld,d[i]),lu=min(lu,u[i]);
+                else if(pos[i][0]==2) rd=max(rd,d[i]),ru=min(ru,u[i]);
+                else if(pos[i][0]==3) dl=max(dl,l[i]),dr=min(dr,r[i]);
+                else if(pos[i][0]==4) ul=max(ul,l[i]),ur=min(ur,r[i]);
+            }
+            else if(c[i]==2)
+            {
+                if(pos[i][val[i]]==1) ld=max(ld,d[i]),lu=min(lu,u[i]);
+                else if(pos[i][val[i]]==2) rd=max(rd,d[i]),ru=min(ru,u[i]);
+                else if(pos[i][val[i]]==3) dl=max(dl,l[i]),dr=min(dr,r[i]);
+                else if(pos[i][val[i]]==4) ul=max(ul,l[i]),ur=min(ur,r[i]);
+            }
+        assert(ld<=lu&&rd<=ru&&dl<=dr&&ul<=ur);
+        printf("%d %d\n",minr,ld);
+        printf("%d %d\n",maxl,rd);
+        printf("%d %d\n",dl,minu);
+        printf("%d %d",ul,maxd);
+    }
+    return 0;
+}
+```
 
 ---
 
@@ -66,6 +309,142 @@ int main()
 ---
 
 #### カメレオンの恋 / Chameleon’s Love
+
+对于两只变色龙，如果将他们两个开一次会议时只有一种颜色，只可能是一只变色龙和它喜欢的变色龙，一只变色龙和喜欢它的变色龙，一只变色龙和它颜色相同的变色龙。
+
+将这两个点之间连边，如果两只变色龙相互喜欢，那么我们把他们之间的边删去，这样对答案是没有影响的。
+
+那么这张图的点的度数要么是一要么是三，度数为一那些点和它颜色相同的点已经确定，剩下度数为三的点。
+
+对于度数为三的点，我们可以将它和它相邻的两个点两两询问一下，如果这两个点分别为喜欢它的点和和它颜色相同的点，那么颜色只有一种，否则颜色为两种，重复这一过程直到找到它喜欢的点。通过这样，我们可以确定出所有它喜欢的点和喜欢它的点，剩下的那一个一定就是和它颜色相同的点。
+
+问题在于如何确定图上的边，我们可以每次删去一个极大的独立集，每次找到剩下的点和独立集之间的边，递归处理剩下的点。因为这是一个二分图，所以复杂度是对的。
+
+松一松就过了（
+
+---
+
+```cpp
+#include"chameleon.h"
+#include<iostream>
+#include<cstdio>
+#include<vector>
+#include<numeric>
+#include<functional>
+using namespace std;
+void Solve(int n)
+{
+    function<vector<int>(const vector<int> &,int)>addback=[=](const vector<int> &p,int u)
+    {
+        vector<int>S=p;
+        S.emplace_back(u);
+        return S;
+    };
+    vector<int>deg(n*2+1);
+    vector<vector<int>>G(n*2+1);
+    function<void(const vector<int> &,int)>findedge=[&](const vector<int> &S,int u)
+    {
+        if(S.empty()) return;
+        if(S.size()==1)
+        {
+            G[S[0]].emplace_back(u);
+            G[u].emplace_back(S[0]);
+            deg[u]++,deg[S[0]]++;
+            return;
+        }
+        int mid=max((int)(S.size()/2.8),1);
+        vector<int>l,r;
+        for(int i=0;i<mid;i++)
+            l.emplace_back(S[i]);
+        for(int i=mid;i<(int)S.size();i++)
+            r.emplace_back(S[i]);
+        if(Query(addback(l,u))==(int)l.size()+1) return findedge(r,u);
+        else if(Query(addback(r,u))==(int)r.size()+1) return findedge(l,u);
+        else findedge(l,u),findedge(r,u);
+        return;
+    };
+    function<void(const vector<int> &)> divide=[&](const vector<int> &p)
+    {
+        if(p.empty()) return;
+        int lst=0;
+        vector<int>S,ret;
+        for(int u:p)
+        {
+            if(lst==0)
+            {
+                S.emplace_back(u),lst++;
+                continue;
+            }
+            if(deg[u]==3) continue;
+            bool flag=true;
+            for(int v:S)
+            {
+                for(int t:G[u])
+                    if(v==t)
+                    {
+                        flag=false;
+                        break;
+                    }
+                if(!flag) break;
+            }
+            if(!flag) ret.emplace_back(u);
+            else
+            {
+                int now=Query(addback(S,u));
+                if(now>lst) S.emplace_back(u),lst=now;
+                else ret.emplace_back(u);
+            }
+        }
+        for(int u:ret)
+        {
+            findedge(S,u);
+            vector<int>nxt;
+            for(int v:S)
+                if(deg[v]<3) nxt.emplace_back(v);
+            S=nxt; 
+        }
+        divide(ret);
+        return;
+    };
+    vector<int>S(n*2);
+    iota(S.begin(),S.end(),1);
+    divide(S);
+    vector<int>to(n*2+1);
+    for(int u=1;u<=n*2;u++)
+        if(deg[u]==3)
+        {
+            if(Query({u,G[u][0],G[u][1]})==1) to[u]=G[u][2];
+            else if(Query({u,G[u][0],G[u][2]})==1) to[u]=G[u][1];
+            else to[u]=G[u][0];
+        }
+    vector<int>from(n*2+1);
+    for(int u=1;u<=n*2;u++)
+        if(deg[u]==3) from[to[u]]=u;
+    vector<int>match(n*2+1);
+    for(int u=1;u<=n*2;u++)
+        if(!match[u])
+        {
+            if(deg[u]==1)
+            {
+                int v=G[u][0];
+                match[u]=v;
+                match[v]=u;
+                Answer(u,v);
+            }
+            else if(deg[u]==3)
+            {
+                int v;
+                if(G[u][0]!=from[u]&&G[u][0]!=to[u]) v=G[u][0];
+                else if(G[u][1]!=from[u]&&G[u][1]!=to[u]) v=G[u][1];
+                else v=G[u][2];
+                match[u]=v;
+                match[v]=u;
+                Answer(u,v);
+            }
+        }
+    return;
+}
+```
 
 ---
 
@@ -458,3 +837,614 @@ int main()
 
 ---
 
+#### 収穫 / Harvest
+
+由于此题过于阿拉丁，所以就不写题解了。
+
+---
+
+```cpp
+#include<iostream>
+#include<cstdio>
+#include<cstring>
+#include<queue>
+#include<stack>
+#include<map>
+#include<vector>
+#include<algorithm>
+using namespace std;
+const int N=200005*2;
+const long long INF=4557430888798830399;
+int n,m,L,C,Q;
+int a[N],b[N];
+int ida[N],idb[N],tot;
+bool isb[N];
+vector<pair<int,int>>G[N];
+int dfn[N],low[N],Index;
+int bel[N],cnt;
+vector<int>block[N];
+bool book[N];
+void tarjan(int u)
+{
+    static bool vis[N];
+    static stack<int>s;
+    dfn[u]=low[u]=++Index;
+    s.emplace(u);
+    vis[u]=true;
+    for(auto [v,w]:G[u])
+        if(!dfn[v])
+        {
+            tarjan(v);
+            low[u]=min(low[u],low[v]);
+        }
+        else if(vis[v]) low[u]=min(low[u],dfn[v]);
+    if(dfn[u]==low[u])
+    {
+        cnt++;
+        while(s.top()!=u)
+        {
+            bel[s.top()]=cnt;
+            block[cnt].emplace_back(s.top());
+            vis[s.top()]=false;
+            s.pop();
+        }
+        bel[u]=cnt;
+        block[cnt].emplace_back(u);
+        vis[u]=false;
+        s.pop();
+    }
+    return;
+}
+vector<pair<int,int>>GT[N];
+int siz[N];
+long long sumt[N];
+void dfs(int u,int father,int col)
+{
+    bel[u]=col;
+    dfn[u]=++Index;
+    siz[u]=1;
+    for(auto [v,w]:GT[u])
+    {
+        if(v==father) continue;
+        sumt[v]=sumt[u]+w; 
+        dfs(v,u,col);
+        siz[u]+=siz[v];
+    }
+    return;
+}
+int rt[N];
+long long dis1[N],dis2[N];
+long long len[N];
+void getdis1(int s)
+{
+    queue<int>q;
+    q.emplace(s);
+    dis1[s]=0;
+    while(!q.empty())
+    {
+        int u=q.front();
+        q.pop();
+        for(auto [v,w]:GT[u])
+            if(dis1[v]>dis1[u]+w)
+            {
+                dis1[v]=dis1[u]+w;
+                q.emplace(v);
+            }
+    }
+    return;
+}
+void getdis2(int s)
+{
+    queue<int>q;
+    q.emplace(s);
+    dis2[s]=0;
+    while(!q.empty())
+    {
+        int u=q.front();
+        q.pop();
+        for(auto [v,w]:G[u])
+            if(dis2[v]>dis2[u]+w)
+            {
+                dis2[v]=dis2[u]+w;
+                q.emplace(v);
+            }
+    }
+    return;
+}
+void rebuild()
+{
+    for(int i=1;i<=tot;i++)
+        if(!dfn[i]) tarjan(i);
+    map<tuple<int,int,int>,bool>ban;
+    for(int i=1;i<=cnt;i++)
+        if(bel[G[block[i][0]][0].first]==i)
+        {
+            for(int u:block[i])
+                book[u]=true;
+            int now=block[i][0],to=G[now][0].first,val=G[now][0].second;
+            ban[{now,to,val}]=true;
+            do
+            {
+                len[i]+=val;
+                now=to,to=G[now][0].first,val=G[now][0].second;
+            }
+            while(now!=block[i][0]);
+        }
+        else block[i].clear();
+    static int deg[N];
+    fill(deg+1,deg+tot+1,0);
+    for(int u=1;u<=tot;u++)
+        for(auto [v,w]:G[u])
+            if(!ban[{u,v,w}]) GT[v].emplace_back(u,w),deg[u]++;
+    Index=0;
+    for(int i=1;i<=tot;i++)
+        if(deg[i]==0) dfs(i,0,bel[i]);
+    for(int i=1;i<=cnt;i++)
+        if(bel[G[block[i][0]][0].first]==i)
+        {
+            int now=block[i][0],to=G[now][0].first,val=G[now][0].second;
+            GT[to].emplace_back(now,val);
+        }
+    fill(dis1+1,dis1+tot+1,INF);
+    fill(dis2+1,dis2+tot+1,INF);
+    for(int i=1;i<=tot;i++)
+        if(deg[i]==0) rt[bel[i]]=G[i][0].first,getdis1(G[i][0].first),getdis2(G[i][0].first);
+    for(int i=1;i<=tot;i++)
+        block[bel[i]].emplace_back(i);
+    for(int i=1;i<=cnt;i++)
+    {
+        sort(block[i].begin(),block[i].end());
+        block[i].erase(unique(block[i].begin(),block[i].end()),block[i].end());
+    }
+    return;
+}
+struct BIT
+{
+    int n;
+    int C[N];
+    BIT()
+    {
+        memset(C,0,sizeof(C));
+        return;
+    }
+    void init(int _n)
+    {
+        n=_n;
+        return;
+    }
+    int lowbit(int x)
+    {
+        return x&-x;
+    }
+    void add(int x,int y)
+    {
+        for(int i=x;i<=n;i+=lowbit(i))
+            C[i]+=y;
+        return;
+    }
+    int getsum(int x)
+    {
+        int res=0;
+        for(int i=x;i>0;i-=lowbit(i))
+            res+=C[i];
+        return res;
+    }
+    int query(int l,int r)
+    {
+        return getsum(r)-getsum(l-1);
+    }
+}T1,T2;
+struct Query
+{
+    int v;
+    long long t;
+    int id;
+}query[N];
+long long ans[N];
+vector<Query>q[N];
+void solve()
+{
+    for(int i=1;i<=Q;i++)
+        q[bel[query[i].v]].emplace_back(query[i]);
+    for(int i=1;i<=cnt;i++)
+    if(!block[i].empty())
+    {
+        vector<Query>nquery;
+        for(auto [v,t,id]:q[i])
+            nquery.emplace_back((Query){v,t,id});
+        sort(nquery.begin(),nquery.end(),[=](const Query &a,const Query &b){return a.t+sumt[a.v]<b.t+sumt[b.v];});
+        sort(block[i].begin(),block[i].end(),[=](const int &x,const int &y){return sumt[x]<sumt[y];});
+        T1.init(tot);
+        int j=-1;
+        for(auto [v,t,id]:nquery)
+            if(!book[v])
+            {
+                while(j+1<(int)block[i].size()&&sumt[block[i][j+1]]<=t+sumt[v])
+                {
+                    if(isb[block[i][j+1]]) T1.add(dfn[block[i][j+1]],1);
+                    j++;
+                }
+                ans[id]+=T1.query(dfn[v],dfn[v]+siz[v]-1);
+            }
+        for(int k=0;k<=j;k++)
+            if(isb[block[i][k]]) T1.add(dfn[block[i][k]],-1);
+        j=-1;
+        for(auto [v,t,id]:nquery)
+            if(book[v])
+            {
+                while(j+1<(int)block[i].size()&&sumt[block[i][j+1]]<=t+sumt[v])
+                {
+                    if(isb[block[i][j+1]]&&!(dfn[rt[i]]<=dfn[block[i][j+1]]&&dfn[block[i][j+1]]<=dfn[rt[i]]+siz[rt[i]]-1)) T1.add(dfn[block[i][j+1]],1);
+                    j++;
+                }
+                ans[id]+=T1.query(dfn[v],dfn[v]+siz[v]-1);
+            }
+        for(int k=0;k<=j;k++)
+            if(!(dfn[rt[i]]<=dfn[block[i][k]]&&dfn[block[i][k]]<=dfn[rt[i]]+siz[i]-1)) T1.add(dfn[block[i][k]],-1);
+        int num=0;
+        long long sum=0;
+        sort(nquery.begin(),nquery.end(),[=](const Query &a,const Query &b){return a.t<b.t;});
+        sort(block[i].begin(),block[i].end(),[=](const int &x,const int &y){return dis1[x]<dis1[y];});
+        static long long bv[N];
+        static long long tl[N];
+        int c=0;
+        for(int j=0;j<(int)block[i].size();j++)
+            if(isb[block[i][j]]) tl[j]=dis1[block[i][j]]%len[i],bv[++c]=tl[j];
+        sort(bv+1,bv+c+1);
+        c=unique(bv+1,bv+c+1)-bv-1;
+        for(int j=0;j<(int)block[i].size();j++)
+            if(isb[block[i][j]]) tl[j]=lower_bound(bv+1,bv+c+1,tl[j])-bv;
+        T2.init(c);
+        j=-1;
+        for(auto [v,t,id]:nquery)
+            if(book[v])
+            {
+                while(j+1<(int)block[i].size()&&dis1[block[i][j+1]]<=t)
+                {
+                    if(isb[block[i][j+1]]) num++,sum+=dis1[block[i][j+1]]/len[i],T2.add(tl[j+1],1);
+                    j++;
+                }
+                long long x=t+len[i]-dis2[v];
+                int xl=upper_bound(bv+1,bv+c+1,x%len[i])-bv;
+                ans[id]+=x/len[i]*num-sum-T2.query(xl,c);
+            }
+        for(int k=0;k<=j;k++)
+            if(isb[block[i][k]]) T2.add(tl[k],-1);
+    }
+    return;
+}
+int main()
+{
+    scanf("%d%d%d%d",&n,&m,&L,&C);
+    for(int i=1;i<=n;i++)
+        scanf("%d",&a[i]);
+    for(int i=1;i<=m;i++)
+        scanf("%d",&b[i]);
+    for(int i=1;i<=n;i++)
+        ida[i]=ida[i+n]=++tot,a[i+n]=a[i]+L;
+    for(int i=1;i<=m;i++)
+        idb[i]=idb[i+m]=++tot,b[i+m]=b[i]+L,isb[idb[i]]=true;
+    for(int i=n+1,j=1;i<=n+n;i++)
+    {
+        while(j+1<=n+n&&a[i]-a[j+1]>=C%L) j++;
+        if(a[i]-a[j]>=C%L) G[ida[i]].emplace_back(ida[j],C/L*L+a[i]-a[j]);
+    }
+    for(int i=m+1,j=1;i<=m+m;i++)
+    {
+        while(j+1<=n+n&&b[i]>a[j+1]) j++;
+        if(b[i]>a[j]) G[idb[i]].emplace_back(ida[j],b[i]-a[j]);
+    }
+    rebuild();
+    scanf("%d",&Q);
+    for(int i=1;i<=Q;i++)
+    {
+        int v;
+        long long t;
+        scanf("%d%lld",&v,&t);
+        query[i]={ida[v],t,i};
+    }
+    solve();
+    for(int i=1;i<=Q;i++)
+        printf("%lld\n",ans[i]);
+    return 0;
+}
+```
+
+---
+
+#### 迷い猫 / Stray Cat
+
+咕咕咕
+
+---
+
+#### 首都 / Capital City
+
+考虑点分治，每次用 BFS 计算以当前的根为首都的最小代价，如果访问的过程中出现一种颜色在根的上面那些点，那么以当前的根为首都显然不如以它的父亲优。
+
+---
+
+```cpp
+#include<iostream>
+#include<cstdio>
+#include<vector>
+#include<queue>
+using namespace std;
+const int N=200005;
+const int INF=1061109567;
+int n,k;
+vector<int>G[N];
+int c[N];
+vector<int>pos[N];
+int root,tot;
+int siz[N],Max[N];
+bool vis[N];
+void getroot(int u,int father)
+{
+    siz[u]=1,Max[u]=0;
+    for(int v:G[u])
+    {
+        if(v==father) continue;
+        if(vis[v]) continue;
+        getroot(v,u);
+        siz[u]+=siz[v];
+        Max[u]=max(Max[u],siz[v]);
+    }
+    Max[u]=max(Max[u],tot-siz[u]);
+    if(Max[u]<Max[root]) root=u;
+    return;
+}
+int dep[N];
+int fa[N];
+void getdep(int u,int father)
+{
+    dep[u]=dep[father]+1;
+    fa[u]=father;
+    for(int v:G[u])
+    {
+        if(v==father) continue;
+        if(vis[v]) continue;
+        getdep(v,u);
+    }
+    return;
+}
+int cnt[N];
+void addcnt(int u,int father,int val)
+{
+    cnt[c[u]]+=val;
+    for(int v:G[u])
+    {
+        if(v==father) continue;
+        if(vis[v]) continue;
+        addcnt(v,u,val);
+    }
+    return;
+}
+int calc(int rt)
+{
+    if(cnt[c[rt]]>0) return INF;
+    static bool inq[N],inc[N];
+    vector<int>pu,pc;
+    inc[c[rt]]=true;
+    pc.emplace_back(c[rt]);
+    queue<int>q;
+    for(int u:pos[c[rt]])
+        if(u!=rt) inq[u]=true,pu.emplace_back(u),q.emplace(u);
+    while(!q.empty())
+    {
+        int u=q.front();
+        q.pop();
+        int v=fa[u];
+        if(v==rt) continue;
+        if(inq[v]) continue;
+        if(cnt[c[v]]>0)
+        {
+            for(int u:pu)
+                inq[u]=false;
+            for(int c:pc)
+                inc[c]=false;
+            return INF;
+        }
+        inq[v]=true,pu.emplace_back(v),q.emplace(v);
+        if(!inc[c[v]])
+        {
+            inc[c[v]]=true;
+            pc.emplace_back(c[v]);
+            for(int x:pos[c[v]])
+                if(!inq[x]&&x!=rt) inq[x]=true,pu.emplace_back(x),q.emplace(x);
+        }
+    }
+    for(int u:pu)
+        inq[u]=false;
+    for(int c:pc)
+        inc[c]=false;
+    int res=pc.size()-1;
+    return res;
+}
+int ans=INF;
+void solve(int u)
+{
+    int v=calc(u);
+    ans=min(ans,v);
+    addcnt(u,0,1);
+    vis[u]=true;
+    for(int v:G[u])
+    {
+        if(vis[v]) continue;
+        tot=siz[v],root=0;
+        getroot(v,0);
+        getdep(root,0);
+        addcnt(v,0,-1);
+        solve(root);
+        addcnt(v,0,1);
+    }
+    return;
+}
+int main()
+{
+    scanf("%d%d",&n,&k);
+    for(int i=1;i<n;i++)
+    {
+        int x,y;
+        scanf("%d%d",&x,&y);
+        G[x].emplace_back(y);
+        G[y].emplace_back(x);
+    }
+    for(int i=1;i<=n;i++)
+        scanf("%d",&c[i]);
+    for(int i=1;i<=n;i++)
+        pos[c[i]].emplace_back(i);
+    Max[0]=INF,tot=n;
+    getroot(1,0);
+    getdep(root,0);
+    solve(root);
+    printf("%d",ans);
+    return 0;
+}
+```
+
+---
+
+#### 伝説の団子職人 / Legendary Dango Maker
+
+咕咕咕。。。
+
+---
+
+#### 治療計画 / Treatment Project
+
+令 $f_i$ 表示把 $[1,r_i]$ 都治好的最小代价，这里对时间没有限制，考虑用 $f_i$ 更新 $f_j$：
+
+$$f_j=f_i+C_j(R_i-L_j + 1\geq |T_i-T_j|)$$
+
+这个东西相当于一个最短路，可以发现边权只和目标点有关，所以我们跑 Dijkstra 的时候第一个能更新它的点一定就是最短的。用线段树维护还没有松弛的点，堆维护松弛过的点，直接暴力复杂度是对的，因为每个点只会被松弛一次。
+
+---
+
+```cpp
+#include<iostream>
+#include<cstdio>
+#include<queue>
+#include<algorithm>
+using namespace std;
+const int M=100005;
+const int INF=1061109567*2;
+const long long LINF=4557430888798830399;
+int n,m;
+struct Seg
+{
+    int t,l,r,c;
+}s[M];
+struct Segment_Tree
+{
+    struct Node
+    {
+        int l,r;
+        pair<int,int>mi;
+    }tree[M<<2];
+    void push_up(int i)
+    {
+        tree[i].mi=min(tree[i*2].mi,tree[i*2+1].mi);
+        return;
+    }
+    void build(int i,int l,int r)
+    {
+        tree[i].l=l,tree[i].r=r;
+        if(l==r)
+        {
+            tree[i].mi={INF,l};
+            return;
+        }
+        int mid=(l+r)/2;
+        build(i*2,l,mid);
+        build(i*2+1,mid+1,r);
+        push_up(i);
+        return;
+    }
+    void modify(int i,int u,int v)
+    {
+        if(tree[i].l==tree[i].r)
+        {
+            tree[i].mi.first=v;
+            return;
+        }
+        if(u<=tree[i*2].r) modify(i*2,u,v);
+        else modify(i*2+1,u,v);
+        push_up(i);
+        return;
+    }
+    pair<int,int>query(int i,int l,int r)
+    {
+        if(l<=tree[i].l&&tree[i].r<=r) return tree[i].mi;
+        pair<int,int> res={INF,0};
+        if(l<=tree[i*2].r) res=min(res,query(i*2,l,r));
+        if(r>=tree[i*2+1].l) res=min(res,query(i*2+1,l,r));
+        return res;
+    }
+}T1,T2;
+long long f[M];
+bool vis[M];
+int main()
+{
+    scanf("%d%d",&n,&m);
+    for(int i=1;i<=m;i++)
+    {
+        int t,l,r,c;
+        scanf("%d%d%d%d",&t,&l,&r,&c);
+        s[i]={t,l,r,c};
+    }
+    sort(s+1,s+m+1,[=](const Seg &a,const Seg &b){return a.t<b.t;});
+    T1.build(1,1,m),T2.build(1,1,m);
+    fill(f+1,f+m+1,LINF);
+    for(int i=1;i<=m;i++)
+        T1.modify(1,i,s[i].l-s[i].t-1),T2.modify(1,i,s[i].l+s[i].t-1);
+    priority_queue<pair<long long,int>,vector<pair<long long,int>>,greater<pair<long long,int>>>q;
+    for(int i=1;i<=m;i++)
+        if(s[i].l==1) f[i]=s[i].c,q.emplace(f[i],i);
+    while(!q.empty())
+    {
+        int u=q.top().second;
+        q.pop();
+        if(vis[u]) continue;
+        vis[u]=true;
+        T1.modify(1,u,INF);
+        T2.modify(1,u,INF);
+        while(true)
+        {
+            auto [rt,v]=T1.query(1,1,u);
+            if(rt<=s[u].r-s[u].t)
+            {
+                T1.modify(1,v,INF);
+                T2.modify(1,v,INF);
+                if(f[v]>f[u]+s[v].c)
+                {
+                    f[v]=f[u]+s[v].c;
+                    q.emplace(f[v],v);
+                }
+            }
+            else break;
+        }
+        while(true)
+        {
+            auto [rt,v]=T2.query(1,u,m);
+            if(rt<=s[u].r+s[u].t)
+            {
+                T1.modify(1,v,INF);
+                T2.modify(1,v,INF);
+                if(f[v]>f[u]+s[v].c)
+                {
+                    f[v]=f[u]+s[v].c;
+                    q.emplace(f[v],v);
+                }
+            }
+            else break;
+        }
+    }
+    long long ans=LINF;
+    for(int i=1;i<=m;i++)
+        if(s[i].r==n) ans=min(ans,f[i]);
+    if(ans>=LINF) printf("-1");
+    else printf("%lld",ans);
+    return 0;
+}
+```
