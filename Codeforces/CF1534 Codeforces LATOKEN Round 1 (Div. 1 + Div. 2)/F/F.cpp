@@ -19,7 +19,7 @@ vector<int>bel;
 int tot;
 void tarjan(int u)
 {
-    dfn[u]=low[u]=Index++;
+    dfn[u]=low[u]=++Index;
     vis[u]=true;
     stk.emplace(u);
     for(int v:GG[u])
