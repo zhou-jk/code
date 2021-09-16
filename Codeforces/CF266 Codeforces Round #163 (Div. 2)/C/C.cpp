@@ -1,6 +1,5 @@
 #include<iostream>
 #include<cstdio>
-#include<cassert>
 #include<tuple>
 #include<numeric>
 #include<vector>
@@ -18,21 +17,35 @@ int main()
     vector<tuple<int,int,int>>res;
     for(int i=1;i<n;i++)
         maxx[y[i]]=max(maxx[y[i]],x[i]),maxy[x[i]]=max(maxy[x[i]],y[i]);
-    for(int i=n;i>1;i--)
+    for(int i=n,j=1;i>j;i--)
         if(maxy[i]==0)
         {
-            res.emplace_back(1,1,i);
-            for(int j=1;j<n;j++)
-                if(x[j]==1) x[j]=i;
-            break;
+            while(j<=n&&maxy[j]==0) j++;
+            if(i>j)
+            {
+                res.emplace_back(1,j,i);
+                for(int k=1;k<n;k++)
+                    if(x[k]==j) x[k]=i;
+                    else if(x[k]==i) x[k]=j;
+                swap(maxy[i],maxy[j]);
+            }
         }
+    fill(maxx+1,maxx+n+1,0);
+    fill(maxy+1,maxy+n+1,0);
     for(int i=1;i<n;i++)
+        maxx[y[i]]=max(maxx[y[i]],x[i]),maxy[x[i]]=max(maxy[x[i]],y[i]);
+    for(int i=1,j=n;i<j;i++)
         if(maxx[i]==0)
         {
-            res.emplace_back(2,i,n);
-            for(int j=1;j<n;j++)
-                if(y[j]==n) y[j]=i;
-            break;
+            while(j>=1&&maxx[j]==0) j--;
+            if(i<j)
+            {
+                res.emplace_back(2,i,j);
+                for(int k=1;k<n;k++)
+                    if(y[k]==j) y[k]=i;
+                    else if(y[k]==i) y[k]=j;
+                swap(maxx[i],maxx[j]);
+            }
         }
     fill(maxx+1,maxx+n+1,0);
     fill(maxy+1,maxy+n+1,0);
@@ -52,8 +65,6 @@ int main()
             swap(pos[now[i]],pos[id[i]]);
             swap(now[l],now[r]);
         }
-    for(int i=1;i<n;i++)
-        assert(maxy[now[i]]<=maxy[now[i+1]]);
     int m=res.size();
     printf("%d\n",m);
     for(auto [t,i,j]:res)
