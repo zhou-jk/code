@@ -3,7 +3,7 @@
 #include<cstring>
 #include<queue>
 using namespace std;
-const int N=505,M=100005;
+const int N=55,M=100005;
 const int INF=1061109567;
 const long long LINF=4557430888798830399;
 struct Edge
@@ -93,7 +93,7 @@ pair<long long,long long> dinic()
         pair<long long,long long> res=dfs(S,INF);
         flow+=res.first,cost+=res.second;
     }
-    return make_pair(flow,cost);
+    return {flow,cost};
 }
 int n,m;
 char s[N][N];
@@ -114,9 +114,9 @@ int main()
             if(s[i][j]!='#')
             {
                 if(i+1<=n&&s[i+1][j]!='#') add(id[i][j],id[i+1][j],INF,1);
-                if(j+1<=n&&s[i][j+1]!='#') add(id[i][j],id[i][j+1],INF,1);
+                if(j+1<=m&&s[i][j+1]!='#') add(id[i][j],id[i][j+1],INF,1);
                 if(s[i][j]=='o') add(S,id[i][j],1,0);
-                add(id[i][j],T,1,0);
+                add(id[i][j],T,1,0);   
             }
     pair<long long,long long> ans=dinic();
     printf("%lld",ans.second);
