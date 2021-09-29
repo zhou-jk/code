@@ -23,6 +23,10 @@ namespace DataMaker
     {
         return myrand()%(r-l+1)+l;
     }
+    long long rand(long long l,long long r)
+    {
+        return myrand()%(r-l+1)+l;
+    }
     template<typename T>
     pair<T,T> rand_seg(T l,T r)
     {
@@ -64,10 +68,11 @@ namespace DataMaker
         rand_shuffle(edge.begin(),edge.end());
         return edge;
     }
-    vector<tuple<int,int,int>>rand_value_tree(int n,int c)
+    template<typename T>
+    vector<tuple<int,int,T>>rand_value_tree(int n,T c)
     {
         vector<pair<int,int>>edge=rand_tree(n);
-        vector<tuple<int,int,int>>G;
+        vector<tuple<int,int,T>>G;
         for(auto [u,v]:edge)
             G.emplace_back(u,v,rand(1,c));
         rand_shuffle(G.begin(),G.end());
@@ -91,10 +96,11 @@ namespace DataMaker
         rand_shuffle(edge.begin(),edge.end());
         return edge;
     }
-    vector<tuple<int,int,int>>rand_value_chain_tree(int n,int c,int rt=0)
+    template<typename T>
+    vector<tuple<int,int,T>>rand_value_chain_tree(int n,T c,int rt=0)
     {
         vector<pair<int,int>>edge=rand_chain_tree(n,rt);
-        vector<tuple<int,int,int>>G;
+        vector<tuple<int,int,T>>G;
         for(auto [u,v]:edge)
             G.emplace_back(u,v,rand(1,c));
         rand_shuffle(G.begin(),G.end());
@@ -123,10 +129,11 @@ namespace DataMaker
         rand_shuffle(edge.begin(),edge.end());
         return edge;
     }
-    vector<tuple<int,int,int>>rand_value_chrysanthemum_tree(int n,int c,int rt=0)
+    template<typename T>
+    vector<tuple<int,int,T>>rand_value_chrysanthemum_tree(int n,T c,int rt=0)
     {
         vector<pair<int,int>>edge=rand_chrysanthemum_tree(n,rt);
-        vector<tuple<int,int,int>>G;
+        vector<tuple<int,int,T>>G;
         for(auto [u,v]:edge)
             G.emplace_back(u,v,rand(1,c));
         rand_shuffle(G.begin(),G.end());
@@ -181,10 +188,11 @@ namespace DataMaker
         rand_shuffle(edge.begin(),edge.end());
         return edge;
     }
-    vector<tuple<int,int,int>>rand_value_circle_tree(int n,int c)
+    template<typename T>
+    vector<tuple<int,int,T>>rand_value_circle_tree(int n,T c)
     {
         vector<pair<int,int>>edge=rand_circle_tree(n);
-        vector<tuple<int,int,int>>G;
+        vector<tuple<int,int,T>>G;
         for(auto [u,v]:edge)
             G.emplace_back(u,v,rand(1,c));
         rand_shuffle(G.begin(),G.end());
@@ -204,10 +212,11 @@ namespace DataMaker
         rand_shuffle(edge.begin(),edge.end());
         return edge;
     }
-    vector<tuple<int,int,int>>rand_value_graph(int n,int m,int c)
+    template<typename T>
+    vector<tuple<int,int,T>>rand_value_graph(int n,int m,T c)
     {
         vector<pair<int,int>>edge=rand_graph(n,m);
-        vector<tuple<int,int,int>>G;
+        vector<tuple<int,int,T>>G;
         for(auto [u,v]:edge)
             G.emplace_back(u,v,rand(1,c));
         rand_shuffle(G.begin(),G.end());
@@ -230,10 +239,11 @@ namespace DataMaker
         rand_shuffle(edge.begin(),edge.end());
         return edge;
     }
-    vector<tuple<int,int,int>>rand_connected_value_graph(int n,int m,int c)
+    template<typename T>
+    vector<tuple<int,int,T>>rand_connected_value_graph(int n,int m,T c)
     {
         vector<pair<int,int>>edge=rand_connected_graph(n,m);
-        vector<tuple<int,int,int>>G;
+        vector<tuple<int,int,T>>G;
         for(auto [u,v]:edge)
             G.emplace_back(u,v,rand(1,c));
         rand_shuffle(G.begin(),G.end());
