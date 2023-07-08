@@ -76,6 +76,14 @@
         "variant": "cpp",
         "queue": "cpp",
         "ORDERS.C": "cpp",
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "xutility": "cpp",
+        "xtree": "cpp",
+        "ranges": "cpp",
+        "span": "cpp",
+        "stack": "cpp",
+        "xhash": "cpp",
+        "xstring": "cpp",
+        "format": "cpp"
     }
 }
