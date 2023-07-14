@@ -84,6 +84,23 @@
         "stack": "cpp",
         "xhash": "cpp",
         "xstring": "cpp",
-        "format": "cpp"
+        "format": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "ios": "cpp",
+        "locale": "cpp",
+        "stop_token": "cpp",
+        "xfacet": "cpp",
+        "xiosbase": "cpp",
+        "xlocale": "cpp",
+        "xlocbuf": "cpp",
+        "xlocinfo": "cpp",
+        "xlocmes": "cpp",
+        "xlocmon": "cpp",
+        "xlocnum": "cpp",
+        "xloctime": "cpp",
+        "xmemory": "cpp",
+        "xstddef": "cpp",
+        "xtr1common": "cpp"
     }
 }

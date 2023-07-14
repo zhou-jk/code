@@ -4,6 +4,7 @@
 *.bak
 *.in
 *.out
+*.ans
 !fp___.out
 .def
 .s
