@@ -1,5 +1,6 @@
 #include<iostream>
 #include<cstdio>
+using namespace std;
 class Fast_char
 {
 private:
