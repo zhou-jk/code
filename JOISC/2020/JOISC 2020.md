@@ -65,12 +65,13 @@ int main()
 #include<cassert>
 #include<set>
 #include<stack>
+#include<tuple>
 #include<vector>
 #include<numeric>
 #include<algorithm>
 using namespace std;
 const int N=200005;
-const int INF=1061109567;
+const int INF=1000000000;
 int n,k;
 int l[N],d[N],r[N],u[N];
 bool vis[N];
@@ -85,7 +86,7 @@ void dfs(int step)
             printf("%d %d\n",p[i].first,p[i].second);
         exit(0);
     }
-    int maxl=0,minr=INF,maxd=0,minu=INF;
+    int maxl=1,minr=INF,maxd=1,minu=INF;
     for(int i=1;i<=n;i++)
         if(!vis[i])
         {
@@ -106,6 +107,7 @@ void dfs(int step)
     dfs(step+1);
     for(int i:pos)
         vis[i]=false;
+    pos.clear();
     x=maxl,y=minu;
     for(int i=1;i<=n;i++)
         if(!vis[i])
@@ -116,6 +118,7 @@ void dfs(int step)
     dfs(step+1);
     for(int i:pos)
         vis[i]=false;
+    pos.clear();
     x=minr,y=maxd;
     for(int i=1;i<=n;i++)
         if(!vis[i])
@@ -126,6 +129,7 @@ void dfs(int step)
     dfs(step+1);
     for(int i:pos)
         vis[i]=false;
+    pos.clear();
     x=minr,y=minu;
     for(int i=1;i<=n;i++)
         if(!vis[i])
@@ -273,8 +277,8 @@ int main()
             if(c[i]==1||c[i]==2) assert(bel[id[i][0]]!=bel[id[i][1]]);
         for(int i=1;i<=n;i++)
             if(c[i]==1||c[i]==2) val[i]=bel[id[i][1]]<bel[id[i][0]];
-        int ld=0,lu=INF,rd=0,ru=INF;
-        int dl=0,dr=INF,ul=0,ur=INF;
+        int ld=1,lu=INF,rd=1,ru=INF;
+        int dl=1,dr=INF,ul=1,ur=INF;
         for(int i=1;i<=n;i++)
             if(c[i]==1)
             {

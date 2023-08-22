@@ -1,68 +1,74 @@
+#pragma GCC optimize("Ofast")
 #include<iostream>
 #include<cstdio>
 using namespace std;
-const int N=105,M=25,R=25,P=10;
+const int N=105,M=25,K=10;
 const long long INF=4557430888798830399;
-int n,m,r,p;
-long long pw[R];
+int n,m,R,P;
+int pw[K];
 int a[N];
 int v[M];
-long long f[N][N][M][R];
-long long dfs(int l,int r,int k,int o) //[l,r] level k type o
+long long f[N][N][M][K],g[N][N];
+long long dfsg(int l,int r);
+long long dfsf(int l,int r,int x,int k)
 {
-    if(f[l][r][k][o]!=-1) return f[l][r][k][o];
-    if(k==0)
+    if(f[l][r][x][k]!=-1) return f[l][r][x][k];
+    if(k==1)
     {
-        if(l==r) return f[l][r][k][o]=v[a[l]];
-        else
-        {
-            for(int kk=1;kk<=r;kk++)
-                for(int oo=1;oo<=m;oo++)
-                    f[l][r][k][o]=max(f[l][r][k][o],dfs(l,r,kk,oo)+pw[kk-1]*v[oo]);
-            return f[l][r][k][o];
-        }
+        long long res=-INF;
+        for(int i=l;i<=r;i++)
+            if(a[i]==x) res=max(res,dfsg(l,i-1)+dfsg(i+1,r));
+        return f[l][r][x][k]=res;
     }
-    if(l==r)
+    else
     {
-        if(k!=1||o!=a[l]) return f[l][r][k][o]=-INF;
-        else return f[l][r][k][o]=0;
+        long long res=-INF;
+        for(int i=l;i<r;i++)
+            res=max(res,dfsf(l,i,x,k-1)+dfsf(i+1,r,x,k-1));
+        return f[l][r][x][k]=res;
     }
+}
+long long dfsg(int l,int r)
+{
+    if(l>r) return 0;
+    if(g[l][r]!=-1) return g[l][r]; 
     long long res=-INF;
     for(int i=l;i<r;i++)
-        res=max(res,max(dfs(l,i,0,o)+dfs(i+1,r,k,o),dfs(l,i,k,o)+dfs(i+1,r,0,o)));
-    if(k>1)
-    {
-        for(int i=l;i<r;i++)
-            res=max(res,dfs(l,i,k-1,o)+dfs(i+1,r,k-1,o));
-    }
-    if(res>=0) cerr<<"find"<<l<<" "<<r<<" k:"<<k<<" "<<o<<" "<<res<<"\n";
-    return f[l][r][k][o]=res;
+        res=max(res,dfsg(l,i)+dfsg(i+1,r));
+    for(int x=1;x<=m;x++)
+        for(int k=1;k<=R;k++)
+            res=max(res,dfsf(l,r,x,k)+pw[k-1]*v[x]);
+    return g[l][r]=res;
 }
 void solve()
 {
-    scanf("%d%d%d%d",&n,&m,&r,&p);
+    cin>>n>>m>>R>>P;
+    R=min(R,7);
     for(int i=1;i<=n;i++)
-        scanf("%d",&a[i]);
+        cin>>a[i];
     for(int i=1;i<=m;i++)
-        scanf("%d",&v[i]);
+        cin>>v[i];
     pw[0]=1;
-    for(int i=1;i<=r;i++)
-        pw[i]=pw[i-1]*p;
+    for(int i=1;i<=R;i++)
+        pw[i]=pw[i-1]*P;
     for(int l=1;l<=n;l++)
-        for(int r=1;r<=n;r++)
-            for(int k=0;k<=r;k++)
-                for(int o=1;o<=m;o++)
-                    f[l][r][k][o]=-1;
-    long long ans=0;
-    for(int o=1;o<=m;o++)
-        ans=max(ans,dfs(1,n,0,o));
-    printf("%lld\n",ans);
+        for(int r=l;r<=n;r++)
+            g[l][r]=-1;
+    for(int l=1;l<=n;l++)
+        for(int r=l;r<=n;r++)
+            for(int x=1;x<=m;x++)
+                for(int k=1;k<=R;k++)
+                    f[l][r][x][k]=-1;
+    long long ans=dfsg(1,n);
+    cout<<ans<<"\n";
     return;
 }
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr),cout.tie(nullptr);
     int T;
-    scanf("%d",&T);
+    cin>>T;
     while(T--)
         solve();
     return 0;

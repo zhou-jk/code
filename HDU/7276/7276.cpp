@@ -1,3 +1,4 @@
+#pragma GCC optimize("Ofast")
 #include<iostream>
 #include<cstdio>
 #include<vector>
@@ -30,26 +31,28 @@ void dfs(int u,int father)
 }
 void solve()
 {
-    scanf("%d",&n);
+    cin>>n;
     for(int i=1;i<=n;i++)
-        scanf("%d",&a[i]);
+        cin>>a[i];
     for(int i=1;i<=n;i++)
         G[i].clear();
     for(int i=1;i<n;i++)
     {
         int x,y;
-        scanf("%d%d",&x,&y);
+        cin>>x>>y;
         G[x].emplace_back(y);
         G[y].emplace_back(x);
     }
     dfs(1,0);
-    printf("%lld\n",min(f[1][1],f[1][2]));
+    cout<<min(f[1][1],f[1][2])<<"\n";
     return;
 }
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr),cout.tie(nullptr);
     int T;
-    scanf("%d",&T);
+    cin>>T;
     while(T--)
         solve();
     return 0;

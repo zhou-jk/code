@@ -1,3 +1,4 @@
+#pragma GCC optimize("Ofast")
 #include<iostream>
 #include<cstdio>
 #include<vector>
