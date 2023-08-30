@@ -37,7 +37,7 @@ void solve()
 int main()
 {
     ios::sync_with_stdio(false);
-    cin.tie(nullptr);
+    cin.tie(nullptr),cout.tie();
     init();
     int T;
     cin>>T;

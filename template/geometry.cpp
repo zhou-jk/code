@@ -17,6 +17,22 @@ namespace Geometry
     {
         return abs(a-b)<eps;
     }
+    bool less(double a,double b)
+    {
+        return b-a>=eps;
+    }
+    bool greater(double a,double b)
+    {
+        return a-b>=eps;
+    }
+    bool less_equal(double a,double b)
+    {
+        return less(a,b)||equal(a,b);
+    }
+    bool greater_equal(double a,double b)
+    {
+        return greater(a,b)||equal(a,b);
+    }
     class Point
     {
     public:
@@ -54,6 +70,26 @@ namespace Geometry
         friend bool operator == (const Point &a,const Point &b)
         {
             return equal(a.x,b.x)&&equal(a.y,b.y);
+        }
+        friend bool operator < (const Point &a,const Point &b)
+        {
+            if(equal(a.x,b.x)) return less(a.y,b.y);
+            else return less(a.x,b.x);
+        }
+        friend bool operator > (const Point &a,const Point &b)
+        {
+            if(equal(a.x,b.x)) return greater(a.y,b.y);
+            else return greater(a.x,b.x);
+        }
+        friend bool operator <= (const Point &a,const Point &b)
+        {
+            if(equal(a.x,b.x)) return less_equal(a.y,b.y);
+            else return less_equal(a.x,b.x);
+        }
+        friend bool operator >= (const Point &a,const Point &b)
+        {
+            if(equal(a.x,b.x)) return greater_equal(a.y,b.y);
+            else return greater_equal(a.x,b.x);
         }
         double length()const
         {
@@ -136,10 +172,10 @@ namespace Geometry
         Direction direction(const Point &p)const
         {
             double t=cross(b-a,p-a);
-            if(t>=eps) return COUNTER_CLOCKWISE;
-            if(t<=-eps) return CLOCKWISE;
+            if(greater(t,0)) return COUNTER_CLOCKWISE;
+            if(less(t,0)) return CLOCKWISE;
             double l1=dot(p-a,b-a);
-            if(l1<=-eps) return ONLINE_BACK;
+            if(less(l1,0)) return ONLINE_BACK;
             double l2=dot(b-a,b-a);
             if(l1>l2) return ONLINE_FRONT;
             else return ON_SEGMENT;
@@ -177,7 +213,7 @@ namespace Geometry
     }
     int sig(double x)
     {
-        return (x>=eps)-(x<=-eps);
+        return greater(x,0)-less(x,0);
     }
     bool intersection(const Line &x,const Line &y)
     {
@@ -287,7 +323,7 @@ namespace Geometry
         {
             int n=g.size();
             for(int i=0;i<n;i++)
-                if(cross(g[(i+1)%n]-g[i],g[(i-1+n)%n]-g[i])<=-eps) return false;
+                if(less(cross(g[(i+1)%n]-g[i],g[(i-1+n)%n]-g[i]),0)) return false;
             return true;
         }
         int point_containment(const Point &a)const
@@ -321,7 +357,7 @@ namespace Geometry
             double ans=0;
             for(int i=0,j=0;i<n;i++)
             {
-                while(cross(g[i]-g[j],g[(i+1)%n]-g[j])-cross(g[i]-g[(j+1)%n],g[(i+1)%n]-g[(j+1)%n])<=-eps) j=(j+1)%n;
+                while(less(cross(g[i]-g[j],g[(i+1)%n]-g[j]),cross(g[i]-g[(j+1)%n],g[(i+1)%n]-g[(j+1)%n]))) j=(j+1)%n;
                 ans=max(ans,max(distance(g[j],g[i]),distance(g[j],g[(i+1)%n])));
             }
             return ans;
@@ -333,22 +369,22 @@ namespace Geometry
             for(int i=0;i<(int)g.size();i++)
             {
                 Point u=g[i],v=g[(i+1)%n];
-                if(cross(l.b-l.a,u-l.a)>-eps)
+                if(greater_equal(cross(l.b-l.a,u-l.a),0))
                 {
                     res1.push_back(u);
-                    if(cross(l.b-l.a,v-l.a)<=-eps) res1.push_back(cross_point(Line(u,v),l));
+                    if(less(cross(l.b-l.a,v-l.a),0)) res1.push_back(cross_point(Line(u,v),l));
                 }
-                else if(cross(l.b-l.a,v-l.a)>=eps) res1.push_back(cross_point(Line(u,v),l));
+                else if(greater(cross(l.b-l.a,v-l.a),0)) res1.push_back(cross_point(Line(u,v),l));
             }
             for(int i=0;i<(int)g.size();i++)
             {
                 Point u=g[i],v=g[(i+1)%n];
-                if(cross(l.a-l.b,u-l.b)>-eps)
+                if(greater_equal(cross(l.a-l.b,u-l.b),0))
                 {
                     res2.push_back(u);
-                    if(cross(l.a-l.b,v-l.b)<=-eps) res2.push_back(cross_point(Line(u,v),l));
+                    if(less(cross(l.a-l.b,v-l.b),0)) res2.push_back(cross_point(Line(u,v),l));
                 }
-                else if(cross(l.a-l.b,v-l.b)>=eps) res2.push_back(cross_point(Line(u,v),l));
+                else if(greater(cross(l.a-l.b,v-l.b),0)) res2.push_back(cross_point(Line(u,v),l));
             }
             return make_pair(res1,res2);
         }
@@ -370,13 +406,13 @@ namespace Geometry
         int top=0;
         for(int i=0;i<n;i++)
         {
-            while(top>=2&&cross(p[stk[top-1]]-p[stk[top-2]],p[i]-p[stk[top-1]])<eps) stk.pop_back(),top--;
+            while(top>=2&&less_equal(cross(p[stk[top-1]]-p[stk[top-2]],p[i]-p[stk[top-1]]),0)) stk.pop_back(),top--;
             stk.emplace_back(i),top++;
         }
         int tmp=top;
         for(int i=n-2;i>=0;i--)
         {
-            while(top>tmp&&cross(p[stk[top-1]]-p[stk[top-2]],p[i]-p[stk[top-1]])<eps) stk.pop_back(),top--;
+            while(top>tmp&&less_equal(cross(p[stk[top-1]]-p[stk[top-2]],p[i]-p[stk[top-1]]),0)) stk.pop_back(),top--;
             stk.emplace_back(i),top++;
         }
         stk.pop_back(),top--;
@@ -453,7 +489,7 @@ namespace Geometry
         {
             Point pr=l.projection(o),e=(l.b-l.a).unit();
             double d=distance(pr,o);
-            if(d-r>=eps) return {};
+            if(greater(d,r)) return {};
             double t=sqrt(r*r-distance(pr,o)*distance(pr,o));
             if(equal(t,0)) return {pr};
             else return {pr-e*t,pr+e*t};
@@ -461,7 +497,7 @@ namespace Geometry
         vector<Point>cross_point(const Circle &c)const
         {
             double d=distance(o,c.o);
-            if(d-abs(r-c.r)<=-eps||d-r-c.r>=eps) return {};
+            if(less(d,abs(r-c.r))||greater(d,r+c.r)) return {};
             double x=(r*r-c.r*c.r+d*d)/(d*2),h=sqrt(r*r-x*x);
             Point p=o+(c.o-o).unit()*x;
             if(equal(d,abs(r-c.r))||equal(d,r+c.r)) return {p};
@@ -471,7 +507,7 @@ namespace Geometry
         vector<Point>tangent(const Point &p)const
         {
             double d=distance(o,p);
-            if(r-d>=eps) return {};
+            if(greater(r,d)) return {};
             if(equal(d,r)) return {p};
             return cross_point(Circle(p,sqrt(d*d-r*r)));
         }
@@ -486,13 +522,13 @@ namespace Geometry
         }
         double intersection_area(const Point &a,const Point &b)const
         {
-            bool ta=distance(o,a)-r<eps,tb=distance(o,b)-r<eps;
+            bool ta=less_equal(distance(o,a),r),tb=less_equal(distance(o,b),r);
             if(ta&&tb) return cross(a-o,b-o)/2;
             vector<Point>t=cross_point(Line(b,a));
             if(ta&&!tb) return angle(t.front()-o,b-o)*r*r/2+cross(a-o,t.front()-o)/2;
             if(!ta&&tb) return angle(a-o,t.back()-o)*r*r/2+cross(t.back()-o,b-o)/2;
             double s=angle(a-o,b-o)*r*r/2;
-            if(Line(a,b).distance(o)-r>-eps) return s;
+            if(greater_equal(Line(a,b).distance(o),r)) return s;
             return s+angle(t.front()-o,t.back()-o)*r*r/2-cross(t.front()-o,t.back()-o)/2;
         }
         double intersection_area(const Polygon &g)const
@@ -506,8 +542,8 @@ namespace Geometry
         double intersection_area(const Circle &c)const
         {
             double d=distance(o,c.o);
-            if(d-r-c.r>=eps) return 0;
-            if(d-abs(r-c.r)<eps) return min(area(),c.area());
+            if(greater(d,r+c.r)) return 0;
+            if(less_equal(d,abs(r-c.r))) return min(area(),c.area());
             vector<Point>t=cross_point(c);
             double alpha=acos((d*d+r*r-c.r*c.r)/(2*d*r))*2,beta=acos((d*d+c.r*c.r-r*r)/(2*d*c.r))*2;
             double s1=alpha*r*r/2,s2=beta*c.r*c.r/2,s3=sin(alpha)*r*r/2+sin(beta)*c.r*c.r/2;
@@ -522,7 +558,7 @@ namespace Geometry
                 return {Line(o-p,c.o-p),Line(o+p,c.o+p)};
             }
             double d=distance(o,c.o);
-            if(d-abs(r-c.r)<=-eps) return {};
+            if(less(d,abs(r-c.r))) return {};
             Point p((o.x*c.r-c.o.x*r)/(c.r-r),(o.y*c.r-c.o.y*r)/(c.r-r));
             vector<Point>p1=tangent(p),p2=c.tangent(p);
             vector<Line>res;
@@ -534,7 +570,7 @@ namespace Geometry
         vector<Line>common_tangent_in(const Circle &c)const
         {
             double d=distance(o,c.o);
-            if(d-abs(r-c.r)<eps) return {};
+            if(less_equal(d,abs(r-c.r))) return {};
             Point p((o.x*c.r+c.o.x*r)/(r+c.r),(o.y*c.r+c.o.y*r)/(r+c.r));
             vector<Point>p1=tangent(p),p2=c.tangent(p);
             vector<Line>res;
@@ -548,9 +584,9 @@ namespace Geometry
     int intersection(const Circle &a,const Circle &b)
     {
         double d=distance(a.o,b.o);
-        if(d-a.r-b.r>=eps) return SEPARATED;
+        if(greater(d,a.r+b.r)) return SEPARATED;
         else if(equal(d,a.r+b.r)) return CIRCUMSCRIBED;
-        else if(d-abs(a.r-b.r)>=eps) return INTERSECTED;
+        else if(greater(d,abs(a.r-b.r))) return INTERSECTED;
         else if(equal(d,abs(a.r-b.r))) return INSCRIBED;
         else return INCLUDED;
     }
