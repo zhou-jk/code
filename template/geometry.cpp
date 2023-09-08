@@ -1,6 +1,7 @@
 #include<iostream>
 #include<cstdio>
 #include<cmath>
+#include<cassert>
 #include<ctime>
 #include<random>
 #include<vector>
@@ -10,6 +11,7 @@
 using namespace std;
 namespace Geometry
 {
+    #define double long double
     const double eps=1e-10;
     const double PI=acos(-1);
     const double INF=1e18;
@@ -103,6 +105,14 @@ namespace Geometry
         {
             return atan2(y,x);
         }
+        int quadrant()const
+        {
+            if(x>0&&y>=0) return 1;
+            else if(x<=0&&y>0) return 2;
+            else if(x<0&&y<=0) return 3;
+            else if(x>=0&&y<0) return 4;
+            else return 0;
+        }
         friend double angle(const Point &a,const Point &b)
         {
             return atan2(cross(a,b),dot(a,b));
@@ -122,6 +132,12 @@ namespace Geometry
             return out;
         }
     };
+    bool cmp_polar(const Point &a,const Point &b)
+    {
+        int x=a.quadrant(),y=b.quadrant();
+        if(x!=y) return x<y;
+        else return cross(a,b)>0;
+    }
     double distance(const Point &a,const Point &b)
     {
         return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
@@ -229,8 +245,9 @@ namespace Geometry
     mt19937_64 rnd(time(NULL));
     class Polygon
     {
-    public:
+    private:
         vector<Point>g;
+    public:
         Polygon(){}
         Polygon(const int &n){g.resize(n);}
         Polygon(const vector<Point> &f):g(f){}
@@ -426,6 +443,32 @@ namespace Geometry
         for(int i=0;i<t;i++)
             res.push_back(hull[i]);
         return res;
+    }
+    Polygon minkowski_sum(const vector<Point> &a,const vector<Point> &b)
+    {
+        assert(a.size()!=0&&b.size()!=0);
+        Polygon ca=convex_hull(a),cb=convex_hull(b);
+        int na=ca.size(),nb=cb.size();
+        vector<Point>la,lb;
+        for(int i=0;i<na;i++)
+            la.emplace_back(ca[(i+1)%na]-ca[i]);
+        for(int i=0;i<nb;i++)
+            lb.emplace_back(cb[(i+1)%nb]-cb[i]);
+        int pa=0,pb=0;
+        Polygon l;
+        l.push_back(la[0]+lb[0]);
+        while(pa<(int)la.size()&&pb<(int)lb.size())
+        {
+            double val=cross(la[pa],lb[pb]);
+            if(greater(val,0)) l.push_back(l.back()+la[pa]),pa++;
+            else if(less(val,0)) l.push_back(l.back()+lb[pb]),pb++;
+            else l.push_back(l.back()+la[pa]+lb[pb]),pa++,pb++;
+        }
+        while(pa<(int)la.size())
+            l.push_back(l.back()+la[pa]),pa++;
+        while(pb<(int)lb.size())
+            l.push_back(l.back()+lb[pb]),pb++;
+        return l;
     }
     double closest_pair(const vector<Point> &_p)
     {
@@ -628,16 +671,19 @@ namespace Geometry
             return Circle(o,r);
         }
     };
+    #undef double
 }
 using namespace Geometry;
 int main()
 {
-    int n;
-    cin>>n;
-    vector<Point>p(n);
+    int n,m;
+    cin>>n>>m;
+    vector<Point>a(n),b(m);
     for(int i=0;i<n;i++)
-        cin>>p[i];
-    double ans=closest_pair(p);
-    printf("%.0lf",ans*ans);
+        cin>>a[i];
+    for(int i=0;i<m;i++)
+        cin>>b[i];
+    Polygon res=minkowski_sum(a,b);
+    cout<<fixed<<setprecision(0)<<2*res.area();
     return 0;
 }
