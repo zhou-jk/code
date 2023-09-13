@@ -1,6 +1,7 @@
 #pragma GCC optimize("Ofast")
 #include<iostream>
 #include<cstdio>
+#include<cstring>
 #include<cassert>
 #include<vector>
 using namespace std;
@@ -23,26 +24,25 @@ int getinv(int a)
 struct Matrix
 {
     int n,m;
-    vector<vector<int>>mat;
+    int mat[11][11];
     Matrix()
     {
         n=m=0;
-        mat.clear();
+        memset(mat,0,sizeof(mat));
     }
     Matrix(int _n,int _m)
     {
         n=_n,m=_m;
-        mat.resize(n);
         for(int i=0;i<n;i++)
-            mat[i].resize(m);
+            for(int j=0;j<m;j++)
+                mat[i][j]=0;
     }
     void resize(int _n,int _m)
     {
         n=_n,m=_m;
-        mat.clear();
-        mat.resize(n);
         for(int i=0;i<n;i++)
-            mat[i].resize(m);
+            for(int j=0;j<m;j++)
+                mat[i][j]=0;
         return;
     }
     friend Matrix operator*(const Matrix &a,const Matrix &b)

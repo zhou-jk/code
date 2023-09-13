@@ -2,7 +2,7 @@
 #include<cstdio>
 #include<cmath>
 #include<cassert>
-#include<ctime>
+#include<chrono>
 #include<random>
 #include<vector>
 #include<functional>
@@ -11,7 +11,6 @@
 using namespace std;
 namespace Geometry
 {
-    #define double long double
     const double eps=1e-10;
     const double PI=acos(-1);
     const double INF=1e18;
@@ -57,9 +56,19 @@ namespace Geometry
         {
             return Point(a.x+b.x,a.y+b.y);
         }
+        Point operator += (const Point &b)
+        {
+            x+=b.x,y+=b.y;
+            return *this;
+        }
         friend Point operator - (const Point &a,const Point &b)
         {
             return Point(a.x-b.x,a.y-b.y);
+        }
+        Point operator -= (const Point &b)
+        {
+            x-=b.x,y-=b.y;
+            return *this;
         }
         friend double cross(const Point &a,const Point &b)
         {
@@ -92,6 +101,10 @@ namespace Geometry
         {
             if(equal(a.x,b.x)) return greater_equal(a.y,b.y);
             else return greater_equal(a.x,b.x);
+        }
+        Point operator - ()const
+        {
+            return Point(-x,-y);
         }
         double length()const
         {
@@ -221,20 +234,21 @@ namespace Geometry
     {
         return equal(dot(x.b-x.a,y.b-y.a),0);
     }
-    Point cross_point(const Line &x,const Line &y)
+    vector<Point> cross_point(const Line &x,const Line &y)
     {
+        if(parallel(x,y)) return {};
         Point u=x.a-y.a,v=x.b-x.a,w=y.b-y.a;
         double t=cross(w,u)/cross(v,w);
-        return x.a+t*v;
+        return {x.a+t*v};
     }
-    int sig(double x)
+    int sign(double x)
     {
         return greater(x,0)-less(x,0);
     }
     bool intersection(const Line &x,const Line &y)
     {
         if(x.direction(y.a)==ON_SEGMENT||x.direction(y.b)==ON_SEGMENT||y.direction(x.a)==ON_SEGMENT||y.direction(x.b)==ON_SEGMENT) return true;
-        return sig(cross(x.b-x.a,y.a-x.a))*sig(cross(x.b-x.a,y.b-x.a))<0&&sig(cross(y.b-y.a,x.a-y.a))*sig(cross(y.b-y.a,x.b-y.a))<0;
+        return sign(cross(x.b-x.a,y.a-x.a))*sign(cross(x.b-x.a,y.b-x.a))<0&&sign(cross(y.b-y.a,x.a-y.a))*sign(cross(y.b-y.a,x.b-y.a))<0;
     }
     double distance(const Line &x,const Line &y)
     {
@@ -242,7 +256,7 @@ namespace Geometry
         else return min({x.distance(y.a),x.distance(y.b),y.distance(x.a),y.distance(x.b)});
     }
     const int IN=2,ON=1,OUT=0;
-    mt19937_64 rnd(time(NULL));
+    mt19937_64 rnd(chrono::steady_clock::now().time_since_epoch().count());
     class Polygon
     {
     private:
@@ -262,6 +276,12 @@ namespace Geometry
         void push_back(const Point &x)
         {
             return g.push_back(x);
+        }
+        void push_back(const vector<Point> &x)
+        {
+            for(const Point &p:x)
+                g.push_back(p);
+            return;
         }
         void pop_back()
         {
@@ -283,7 +303,7 @@ namespace Geometry
         {
             return g.back();
         }
-        int size()const
+        size_t size()const
         {
             return g.size();
         }
@@ -353,15 +373,12 @@ namespace Geometry
                 for(int i=0;i<n;i++)
                     if(parallel(l,Line(g[i],g[(i+1)%n]))) return false;
                 for(int i=0;i<n;i++)
-                    if(l.direction(g[i])==ON_SEGMENT) return false;
+                    if(l.direction(g[i])==ON_SEGMENT||l.direction(g[i])==ONLINE_FRONT||l.direction(g[i])==ONLINE_BACK) return false;
                 return true;
             };
-            double xx=max(a.x,(double)1),yy=max(a.y,(double)1);
-            for(int i=1;i<n;i++)
-                xx=max(xx,g[i].x),yy=max(yy,g[i].y);
-            Line l=Line(a,Point(xx+rnd()%(unsigned long long)(xx),yy+rnd()%(unsigned long long)(yy)));
+            Line l=Line(a,Point(rnd(),rnd()));
             while(!check(l))
-                l=Line(a,Point(xx+rnd()%(unsigned long long)(xx),yy+rnd()%(unsigned long long)(yy)));
+                l=Line(a,Point(rnd(),rnd()));
             int s=0;
             for(int i=0;i<n;i++)
                 if(intersection(l,Line(g[i],g[(i+1)%n]))) s++;
@@ -405,6 +422,7 @@ namespace Geometry
             }
             return make_pair(res1,res2);
         }
+        Polygon kernel()const;
     };
     Polygon convex_hull(const vector<Point> &_p)
     {
@@ -444,6 +462,44 @@ namespace Geometry
             res.push_back(hull[i]);
         return res;
     }
+    Polygon non_strictly_convex_hull(const vector<Point> &_p)
+    {
+        vector<Point> p=_p;
+        int n=p.size();
+        if(n<=2)
+        {
+            sort(p.begin(),p.end(),[](const Point &a,const Point &b){return a.y==b.y?a.x<b.x:a.y<b.y;});
+            Polygon res;
+            for(const Point &q:p)
+                res.push_back(q);
+            return res;
+        }
+        sort(p.begin(),p.end(),[](const Point &a,const Point &b){return a.x==b.x?a.y<b.y:a.x<b.x;});
+        vector<int>stk;
+        int top=0;
+        for(int i=0;i<n;i++)
+        {
+            while(top>=2&&less(cross(p[stk[top-1]]-p[stk[top-2]],p[i]-p[stk[top-1]]),0)) stk.pop_back(),top--;
+            stk.emplace_back(i),top++;
+        }
+        int tmp=top;
+        for(int i=n-2;i>=0;i--)
+        {
+            while(top>tmp&&less(cross(p[stk[top-1]]-p[stk[top-2]],p[i]-p[stk[top-1]]),0)) stk.pop_back(),top--;
+            stk.emplace_back(i),top++;
+        }
+        stk.pop_back(),top--;
+        vector<Point>hull;
+        for(int i=0;i<top;i++)
+            hull.emplace_back(p[stk[i]]);
+        int t=min_element(hull.begin(),hull.end(),[](const Point &a,const Point &b){return a.y==b.y?a.x<b.x:a.y<b.y;})-hull.begin();
+        Polygon res;
+        for(int i=t;i<top;i++)
+            res.push_back(hull[i]);
+        for(int i=0;i<t;i++)
+            res.push_back(hull[i]);
+        return res;
+    }
     Polygon minkowski_sum(const vector<Point> &a,const vector<Point> &b)
     {
         assert(a.size()!=0&&b.size()!=0);
@@ -455,20 +511,67 @@ namespace Geometry
         for(int i=0;i<nb;i++)
             lb.emplace_back(cb[(i+1)%nb]-cb[i]);
         int pa=0,pb=0;
-        Polygon l;
-        l.push_back(la[0]+lb[0]);
+        vector<Point> l;
+        l.emplace_back(ca[0]+cb[0]);
         while(pa<(int)la.size()&&pb<(int)lb.size())
         {
             double val=cross(la[pa],lb[pb]);
-            if(greater(val,0)) l.push_back(l.back()+la[pa]),pa++;
-            else if(less(val,0)) l.push_back(l.back()+lb[pb]),pb++;
-            else l.push_back(l.back()+la[pa]+lb[pb]),pa++,pb++;
+            if(greater(val,0)) l.emplace_back(l.back()+la[pa]),pa++;
+            else if(less(val,0)) l.emplace_back(l.back()+lb[pb]),pb++;
+            else l.emplace_back(l.back()+la[pa]+lb[pb]),pa++,pb++;
         }
         while(pa<(int)la.size())
-            l.push_back(l.back()+la[pa]),pa++;
+            l.emplace_back(l.back()+la[pa]),pa++;
         while(pb<(int)lb.size())
-            l.push_back(l.back()+lb[pb]),pb++;
-        return l;
+            l.emplace_back(l.back()+lb[pb]),pb++;
+        Polygon res=convex_hull(l);
+        return res;
+    }
+    Polygon half_plane_intersection(const vector<Line> &l,double x1=-INF,double y1=-INF,double x2=INF,double y2=INF)
+    {
+        vector<pair<double,Line>>f;
+        for(int i=0;i<(int)l.size();i++)
+            f.emplace_back((l[i].b-l[i].a).angle(),l[i]);
+        f.emplace_back(0,Line(Point(x1,y1),Point(x2,y1)));
+        f.emplace_back(PI/2,Line(Point(x2,y1),Point(x2,y2)));
+        f.emplace_back(PI,Line(Point(x2,y2),Point(x1,y2)));
+        f.emplace_back(-PI/2,Line(Point(x1,y2),Point(x1,y1)));
+        int n=f.size();
+        sort(f.begin(),f.end(),[](const pair<double,Line> &a,const pair<double,Line> &b){return !equal(a.first,b.first)?a.first<b.first:a.second.direction(b.second.a)==CLOCKWISE;});
+        vector<Line>Ql(n);
+        vector<Point>Qp(n);
+        Polygon res;
+        int head=0,tail=-1;
+        Ql[++tail]=f[0].second;
+        for(int i=1;i<n;i++)
+            if(!equal(f[i].first,f[i-1].first))
+            {
+                while(head<tail&&f[i].second.direction(Qp[tail-1])==CLOCKWISE) tail--;
+                while(head<tail&&f[i].second.direction(Qp[head])==CLOCKWISE) head++;
+                Ql[++tail]=f[i].second;
+                if(head<tail)
+                {
+                    vector<Point> tmp=cross_point(Ql[tail],Ql[tail-1]);
+                    if(!tmp.empty()) Qp[tail-1]=tmp[0];
+                    else return res;
+                }
+            }
+        while(head<tail&&Ql[head].direction(Qp[tail-1])==CLOCKWISE) tail--;
+        while(head<tail&&Ql[tail].direction(Qp[head])==CLOCKWISE) head++;
+        vector<Point> tmp=cross_point(Ql[tail],Ql[head]);
+        if(tmp.empty()||tail-head+1<=2) return res;
+        for(int i=head;i<tail;i++)
+            res.push_back(Qp[i]);
+        res.push_back(tmp[0]);
+        return res;
+    }
+    Polygon Polygon::kernel()const
+    {
+        int n=g.size();
+        vector<Line>l;
+        for(int i=0;i<n;i++)
+            l.emplace_back(Line(g[i],g[(i+1)%n]));
+        return half_plane_intersection(l);
     }
     double closest_pair(const vector<Point> &_p)
     {
@@ -527,6 +630,13 @@ namespace Geometry
         bool tangent(const Line &l)const
         {
             return equal(Geometry::distance(l.projection(o),o),r);
+        }
+        int point_containment(const Point &p)const
+        {
+            double d=distance(o,p);
+            if(equal(d,r)) return ON;
+            else if(less(d,r)) return IN;
+            else return OUT;
         }
         vector<Point>cross_point(const Line &l)const
         {
@@ -671,19 +781,26 @@ namespace Geometry
             return Circle(o,r);
         }
     };
-    #undef double
+    Circle smallest_enclosing_circle(const vector<Point> &_p)
+    {
+        vector<Point>p=_p;
+        shuffle(p.begin(),p.end(),rnd);
+        int n=p.size();
+        Circle c=Circle(Point(0,0),0);
+        for(int i=0;i<n;i++)
+            if(c.point_containment(p[i])==OUT)
+            {
+                c=Circle(p[i],0);
+                for(int j=0;j<i;j++)
+                    if(c.point_containment(p[j])==OUT)
+                    {
+                        c=Circle((p[i]+p[j])/2,distance(p[i],p[j])/2);
+                        for(int k=0;k<j;k++)
+                            if(c.point_containment(p[k])==OUT)
+                                c=Triangle(p[i],p[j],p[k]).circumscribed_circle();
+                    }
+            }
+        return c;
+    }
 }
 using namespace Geometry;
-int main()
-{
-    int n,m;
-    cin>>n>>m;
-    vector<Point>a(n),b(m);
-    for(int i=0;i<n;i++)
-        cin>>a[i];
-    for(int i=0;i<m;i++)
-        cin>>b[i];
-    Polygon res=minkowski_sum(a,b);
-    cout<<fixed<<setprecision(0)<<2*res.area();
-    return 0;
-}

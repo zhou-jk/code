@@ -13,7 +13,7 @@
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe",
                 "-std=c++17",
-                "-O2",
+                "-O0",
                 "-Wall",
                 "'-Wl,--stack=214749647'"
             ],
