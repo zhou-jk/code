@@ -145,12 +145,6 @@ namespace Geometry
             return out;
         }
     };
-    bool cmp_polar(const Point &a,const Point &b)
-    {
-        int x=a.quadrant(),y=b.quadrant();
-        if(x!=y) return x<y;
-        else return cross(a,b)>0;
-    }
     double distance(const Point &a,const Point &b)
     {
         return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
