@@ -806,3 +806,36 @@ namespace Geometry
     }
 }
 using namespace Geometry;
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr),cout.tie(nullptr);
+    int n;
+    cin>>n;
+    vector<Point>a(n);
+    for(int i=0;i<n;i++)
+        cin>>a[i];
+    int pos=0;
+    for(int i=1;i<n;i++)
+        if(a[i].y<a[pos].y||(a[i].y==a[pos].y&&a[i].x<a[pos].x)) pos=i;
+    vector<Point>p;
+    for(int i=pos;i<n;i++)
+        p.emplace_back(a[i]);
+    for(int i=0;i<pos;i++)
+        p.emplace_back(a[i]);
+    Polygon g=p;
+    int ans=0;
+    for(int i=0,j=0;i<n;i=j)
+    {
+        while(j<n&&p[i].y==p[j].y) j++;
+        int l=(i-1+n)%n,r=j%n;
+        if(p[r].y>p[i].y&&p[l].y>p[i].y)
+        {
+            Point v=(p[r]-p[j-1]+p[l]-p[i]).unit();
+            Point q=(p[i]+p[j-1])/2+eps*10000*v;
+            if(g.point_containment(q)) ans++;
+        }
+    }
+    cout<<ans;
+    return 0;
+}
