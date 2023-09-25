@@ -81,7 +81,7 @@ vector<pair<long long,int>>pollard_rho(long long n)
     {
         if(res1[p1].first<res2[p2].first) res.emplace_back(res1[p1]),p1++;
         else if(res1[p1].first>res2[p2].first) res.emplace_back(res2[p2]),p2++;
-        else if(res1[p1].first==res2[p2].first) res.emplace_back(make_pair(res1[p1].first,res1[p1].second+res2[p2].second)),p1++,p2++;
+        else res.emplace_back(make_pair(res1[p1].first,res1[p1].second+res2[p2].second)),p1++,p2++;
     }
     while(p1<(int)res1.size())
         res.emplace_back(res1[p1]),p1++;

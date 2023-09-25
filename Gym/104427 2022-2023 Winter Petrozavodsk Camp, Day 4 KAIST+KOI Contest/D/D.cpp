@@ -146,7 +146,7 @@ int main()
         cin>>fa[i];
     for(int i=1;i<=n;i++)
         cin>>c[i];
-    m=1000000;
+    m=*max_element(c+1,c+n+1);
     for(int i=2;i<=n;i++)
         G[fa[i]].emplace_back(i),G[i].emplace_back(fa[i]);
     dfs(1,0);

@@ -1,19 +1,11 @@
 #include <stdio.h>
 
-int gcd(int a, int b)
-{
-    return b == 0 ? a : gcd(b, a % b);
-}
-
-int lcm(int a, int b)
-{
-    return a / gcd(a, b) * b;
-}
-
 int main()
 {
-    int a, b;
-    scanf("%d%d", &a, &b);
-    printf("%d %d", gcd(a, b), lcm(a, b));
+    int a, b, c, d;
+    scanf("%d%d%d%d", &a, &b, &c, &d);
+    int sum = a + b + c + d;
+    double avg = sum / 4.0;
+    printf("Sum = %d; Average = %.1lf", sum, avg);
     return 0;
 }

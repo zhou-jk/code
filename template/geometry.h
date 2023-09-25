@@ -672,7 +672,7 @@ namespace Geometry
             for(const Line &l:g)
                 f.emplace_back(l);
             g.clear();
-            sort(f.begin(),f.end(),[](const Line &x,const Line &y){return x.a.x<y.a.x||(x.a.x==x.a.x&&x.a.y<x.a.y);});
+            sort(f.begin(),f.end(),[](const Line &x,const Line &y){return x.a.x<y.a.x||(x.a.x==y.a.x&&x.a.y<y.a.y);});
             return f;
         }
         double intersection_area(const Point &a,const Point &b)const

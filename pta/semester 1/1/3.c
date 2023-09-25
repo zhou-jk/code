@@ -2,9 +2,10 @@
 
 int main()
 {
-    int h;
-    scanf("%d", &h);
-    double w = (h - 100) * 0.9 * 2;
-    printf("%.1lf", w);
+    int x;
+    scanf("%d", &x);
+    if (x < 0)
+        x = -x;
+    printf("%d", x);
     return 0;
 }
