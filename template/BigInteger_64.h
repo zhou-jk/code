@@ -7,114 +7,114 @@
 #include <vector>
 #include <sstream>
 using namespace std;
-class BigInteger
+class BigInteger_64
 {
 public:
     // constructor
-    BigInteger(int = 0);
-    BigInteger(long long);
-    BigInteger(const string &);
-    BigInteger(const char *str)
+    BigInteger_64(int = 0);
+    BigInteger_64(long long);
+    BigInteger_64(const string &);
+    BigInteger_64(const char *str)
     {
         *this = string(str);
     }
 
     // assignment operators
-    BigInteger &operator=(int num)
+    BigInteger_64 &operator=(int num)
     {
-        return *this = BigInteger(num);
+        return *this = BigInteger_64(num);
     }
-    BigInteger &operator=(long long num)
+    BigInteger_64 &operator=(long long num)
     {
-        return *this = BigInteger(num);
+        return *this = BigInteger_64(num);
     }
-    BigInteger &operator=(const string &str)
+    BigInteger_64 &operator=(const string &str)
     {
-        return *this = BigInteger(str);
+        return *this = BigInteger_64(str);
     }
-    BigInteger &operator=(const char *str)
+    BigInteger_64 &operator=(const char *str)
     {
-        return *this = BigInteger(str);
+        return *this = BigInteger_64(str);
     }
 
     // relational operators
-    bool operator<(const BigInteger &obj) const
+    bool operator<(const BigInteger_64 &obj) const
     {
         return cmp(obj) < 0;
     }
-    bool operator>(const BigInteger &obj) const
+    bool operator>(const BigInteger_64 &obj) const
     {
         return cmp(obj) > 0;
     }
-    bool operator<=(const BigInteger &obj) const
+    bool operator<=(const BigInteger_64 &obj) const
     {
         return cmp(obj) <= 0;
     }
-    bool operator>=(const BigInteger &obj) const
+    bool operator>=(const BigInteger_64 &obj) const
     {
         return cmp(obj) >= 0;
     }
-    bool operator==(const BigInteger &obj) const
+    bool operator==(const BigInteger_64 &obj) const
     {
         return cmp(obj) == 0;
     }
-    bool operator!=(const BigInteger &obj) const
+    bool operator!=(const BigInteger_64 &obj) const
     {
         return cmp(obj) != 0;
     }
 
     // arithmetic operators
-    BigInteger operator+() const
+    BigInteger_64 operator+() const
     {
         return *this;
     }
-    BigInteger operator-() const
+    BigInteger_64 operator-() const
     {
-        return BigInteger(-sign_, val_);
+        return BigInteger_64(-sign_, val_);
     }
-    BigInteger operator+(const BigInteger &) const;
-    BigInteger operator-(const BigInteger &) const;
-    BigInteger operator*(const BigInteger &) const;
-    BigInteger operator/(const BigInteger &) const;
-    BigInteger operator%(const BigInteger &) const;
+    BigInteger_64 operator+(const BigInteger_64 &) const;
+    BigInteger_64 operator-(const BigInteger_64 &) const;
+    BigInteger_64 operator*(const BigInteger_64 &) const;
+    BigInteger_64 operator/(const BigInteger_64 &) const;
+    BigInteger_64 operator%(const BigInteger_64 &) const;
 
     // compound assignment operators
-    BigInteger &operator+=(const BigInteger &obj)
+    BigInteger_64 &operator+=(const BigInteger_64 &obj)
     {
         return *this = *this + obj;
     }
-    BigInteger &operator-=(const BigInteger &obj)
+    BigInteger_64 &operator-=(const BigInteger_64 &obj)
     {
         return *this = *this - obj;
     }
-    BigInteger &operator*=(const BigInteger &obj)
+    BigInteger_64 &operator*=(const BigInteger_64 &obj)
     {
         return *this = *this * obj;
     }
-    BigInteger &operator/=(const BigInteger &obj)
+    BigInteger_64 &operator/=(const BigInteger_64 &obj)
     {
         return *this = *this / obj;
     }
-    BigInteger &operator%=(const BigInteger &obj)
+    BigInteger_64 &operator%=(const BigInteger_64 &obj)
     {
         return *this = *this % obj;
     }
 
     // increment and decrement operators
-    BigInteger &operator++()
+    BigInteger_64 &operator++()
     {
         return *this += 1;
     }
-    BigInteger &operator--()
+    BigInteger_64 &operator--()
     {
         return *this -= 1;
     }
-    BigInteger operator++(int);
-    BigInteger operator--(int);
+    BigInteger_64 operator++(int);
+    BigInteger_64 operator--(int);
 
     // input and output
-    friend istream &operator>>(istream &, BigInteger &);
-    friend ostream &operator<<(ostream &, const BigInteger &);
+    friend istream &operator>>(istream &, BigInteger_64 &);
+    friend ostream &operator<<(ostream &, const BigInteger_64 &);
 
 protected:
     enum div_type
@@ -127,22 +127,22 @@ protected:
         with_sign,
         without_sign
     };
-    static const int base_ = (int)1e9;
-    static const int width_ = 9;
-    BigInteger(int s, const vector<int> &v) : sign_(s), val_(v) {}
-    int cmp(const BigInteger &, cmp_type = with_sign) const;
-    BigInteger &delZero();
-    BigInteger &add(const BigInteger &);
-    BigInteger &sub(const BigInteger &);
-    BigInteger &mul(const BigInteger &, const BigInteger &);
-    BigInteger &div(BigInteger &, BigInteger, div_type = division);
+    static const long long base_ = (long long)1e18;
+    static const int width_ = 18;
+    BigInteger_64(int s, const vector<long long> &v) : sign_(s), val_(v) {}
+    long long cmp(const BigInteger_64 &, cmp_type = with_sign) const;
+    BigInteger_64 &delZero();
+    BigInteger_64 &add(const BigInteger_64 &);
+    BigInteger_64 &sub(const BigInteger_64 &);
+    BigInteger_64 &mul(const BigInteger_64 &, const BigInteger_64 &);
+    BigInteger_64 &div(BigInteger_64 &, BigInteger_64, div_type = division);
 
 private:
     int sign_;
-    vector<int> val_;
+    vector<long long> val_;
 };
 
-BigInteger::BigInteger(int num) : sign_(0)
+BigInteger_64::BigInteger_64(int num) : sign_(0)
 {
     if (num < 0)
         sign_ = -1, num = -num;
@@ -155,7 +155,7 @@ BigInteger::BigInteger(int num) : sign_(0)
     } while (num);
 }
 
-BigInteger::BigInteger(long long num) : sign_(0)
+BigInteger_64::BigInteger_64(long long num) : sign_(0)
 {
     if (num < 0)
         sign_ = -1, num = -num;
@@ -168,26 +168,26 @@ BigInteger::BigInteger(long long num) : sign_(0)
     } while (num);
 }
 
-BigInteger::BigInteger(const string &str)
+BigInteger_64::BigInteger_64(const string &str)
 {
     sign_ = str[0] == '-' ? -1 : 1;
     int be = str[0] == '-' ? 1 : 0, en = str.size();
     while ((en -= width_) >= be)
     {
-        val_.push_back(stoi(str.substr(en, width_)));
+        val_.push_back(stoll(str.substr(en, width_)));
     }
     if ((en += width_) > be)
     {
-        val_.push_back(stoi(str.substr(be, en - be)));
+        val_.push_back(stoll(str.substr(be, en - be)));
     }
     delZero();
 }
 
-BigInteger BigInteger::operator+(const BigInteger &obj) const
+BigInteger_64 BigInteger_64::operator+(const BigInteger_64 &obj) const
 {
     if (sign_ * obj.sign_ == 1)
     {
-        BigInteger temp;
+        BigInteger_64 temp;
         return cmp(obj, without_sign) >= 0 ? (temp = *this).add(obj) : (temp = obj).add(*this);
     }
     else if (sign_ * obj.sign_ == -1)
@@ -196,11 +196,11 @@ BigInteger BigInteger::operator+(const BigInteger &obj) const
         return sign_ == 0 ? obj : *this;
 }
 
-BigInteger BigInteger::operator-(const BigInteger &obj) const
+BigInteger_64 BigInteger_64::operator-(const BigInteger_64 &obj) const
 {
     if (sign_ * obj.sign_ == 1)
     {
-        BigInteger temp;
+        BigInteger_64 temp;
         return cmp(obj, without_sign) >= 0 ? (temp = *this).sub(obj) : (temp = -obj).sub(*this);
     }
     else if (sign_ * obj.sign_ == -1)
@@ -209,39 +209,39 @@ BigInteger BigInteger::operator-(const BigInteger &obj) const
         return sign_ == 0 ? -obj : *this;
 }
 
-inline BigInteger BigInteger::operator*(const BigInteger &obj) const
+inline BigInteger_64 BigInteger_64::operator*(const BigInteger_64 &obj) const
 {
-    BigInteger temp;
+    BigInteger_64 temp;
     return (temp.sign_ = sign_ * obj.sign_) == 0 ? temp : temp.mul(*this, obj);
 }
 
-inline BigInteger BigInteger::operator/(const BigInteger &obj) const
+inline BigInteger_64 BigInteger_64::operator/(const BigInteger_64 &obj) const
 {
-    BigInteger temp, mod = *this;
+    BigInteger_64 temp, mod = *this;
     return cmp(obj, without_sign) < 0 || (temp.sign_ = sign_ * obj.sign_) == 0 ? temp : temp.div(mod, obj);
 }
 
-inline BigInteger BigInteger::operator%(const BigInteger &obj) const
+inline BigInteger_64 BigInteger_64::operator%(const BigInteger_64 &obj) const
 {
-    BigInteger temp, mod = *this;
+    BigInteger_64 temp, mod = *this;
     return cmp(obj, without_sign) < 0 || (temp.sign_ = sign_) == 0 ? mod : temp.div(mod, obj, remainder);
 }
 
-inline BigInteger BigInteger::operator++(int)
+inline BigInteger_64 BigInteger_64::operator++(int)
 {
-    BigInteger temp = *this;
+    BigInteger_64 temp = *this;
     ++*this;
     return temp;
 }
 
-inline BigInteger BigInteger::operator--(int)
+inline BigInteger_64 BigInteger_64::operator--(int)
 {
-    BigInteger temp = *this;
+    BigInteger_64 temp = *this;
     --*this;
     return temp;
 }
 
-inline istream &operator>>(istream &in, BigInteger &obj)
+inline istream &operator>>(istream &in, BigInteger_64 &obj)
 {
     string str;
     if (in >> str)
@@ -249,17 +249,17 @@ inline istream &operator>>(istream &in, BigInteger &obj)
     return in;
 }
 
-ostream &operator<<(ostream &out, const BigInteger &obj)
+ostream &operator<<(ostream &out, const BigInteger_64 &obj)
 {
     if (obj.sign_ == -1)
         out << '-';
     out << obj.val_.back();
     for (int i = obj.val_.size() - 2; i >= 0; i--)
-        out << setw(BigInteger::width_) << setfill('0') << obj.val_[i];
+        out << setw(BigInteger_64::width_) << setfill('0') << obj.val_[i];
     return out;
 }
 
-int BigInteger::cmp(const BigInteger &obj, cmp_type typ) const
+long long BigInteger_64::cmp(const BigInteger_64 &obj, cmp_type typ) const
 {
     if (typ == with_sign && sign_ != obj.sign_)
         return sign_ - obj.sign_;
@@ -272,7 +272,7 @@ int BigInteger::cmp(const BigInteger &obj, cmp_type typ) const
     return 0;
 }
 
-inline BigInteger &BigInteger::delZero()
+inline BigInteger_64 &BigInteger_64::delZero()
 {
     while ((int)val_.size() > 1 && val_.back() == 0)
         val_.pop_back();
@@ -281,13 +281,13 @@ inline BigInteger &BigInteger::delZero()
     return *this;
 }
 
-BigInteger &BigInteger::add(const BigInteger &obj)
+BigInteger_64 &BigInteger_64::add(const BigInteger_64 &obj)
 {
     int os = obj.val_.size();
     val_.push_back(0);
     for (int i = 0; i < os; i++)
     {
-        long long tmp = (long long)val_[i] + obj.val_[i];
+        long long tmp = val_[i] + obj.val_[i];
         if (tmp >= base_)
             tmp -= base_, ++val_[i + 1];
         val_[i] = tmp;
@@ -295,12 +295,12 @@ BigInteger &BigInteger::add(const BigInteger &obj)
     return delZero();
 }
 
-BigInteger &BigInteger::sub(const BigInteger &obj)
+BigInteger_64 &BigInteger_64::sub(const BigInteger_64 &obj)
 {
     int pos = obj.val_.size();
     for (int i = 0; i < pos; i++)
     {
-        long long tmp = (long long)val_[i] - obj.val_[i];
+        long long tmp = val_[i] - obj.val_[i];
         if (tmp < 0)
             tmp += base_, --val_[i + 1];
         val_[i] = tmp;
@@ -310,7 +310,7 @@ BigInteger &BigInteger::sub(const BigInteger &obj)
     return delZero();
 }
 
-BigInteger &BigInteger::mul(const BigInteger &a, const BigInteger &b)
+BigInteger_64 &BigInteger_64::mul(const BigInteger_64 &a, const BigInteger_64 &b)
 {
     int as = a.val_.size(), bs = b.val_.size();
     val_.resize(as + bs);
@@ -318,7 +318,7 @@ BigInteger &BigInteger::mul(const BigInteger &a, const BigInteger &b)
         for (int j = 0; j < bs; j++)
         {
             int x = i + j;
-            long long tmp = val_[x] + (long long)a.val_[i] * b.val_[j];
+            __int128 tmp = val_[x] + (__int128)a.val_[i] * b.val_[j];
             val_[x + 1] += tmp / base_;
             tmp %= base_;
             val_[x] = tmp;
@@ -326,31 +326,31 @@ BigInteger &BigInteger::mul(const BigInteger &a, const BigInteger &b)
     return delZero();
 }
 
-BigInteger &BigInteger::div(BigInteger &a, BigInteger b, div_type typ)
+BigInteger_64 &BigInteger_64::div(BigInteger_64 &a, BigInteger_64 b, div_type typ)
 {
     int move = a.val_.size() - b.val_.size();
     val_.resize(move + 1);
     b.val_.insert(b.val_.begin(), move, 0);
     for (int i = move; i >= 0; i--)
     {
-        int left = 0, right = base_;
+        long long left = 0, right = base_;
         while (left + 1 < right)
         {
-            int mid = (left + right) >> 1;
-            if (a.cmp(b * BigInteger(mid), without_sign) >= 0)
+            long long mid = (left + right) >> 1;
+            if (a.cmp(b * BigInteger_64(mid), without_sign) >= 0)
                 left = mid;
             else
                 right = mid;
         }
         val_[i] = left;
-        a.sub(b * BigInteger(left));
+        a.sub(b * BigInteger_64(left));
         b.val_.erase(b.val_.begin());
     }
     return typ == division ? delZero() : a;
 }
 int main()
 {
-    BigInteger a,b;
+    BigInteger_64 a,b;
     cin>>a>>b;
     cout<<a+b<<"\n"<<a-b<<"\n"<<a*b<<"\n"<<a/b<<"\n"<<a%b;
     return 0;

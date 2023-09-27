@@ -187,8 +187,8 @@ vector<int> countScans(vector<int> A,vector<int> X,vector<int> V)
         T.insert(make_pair(a[x[i]],x[i]),b[x[i]]);
         res[i]=T.query_max(1,m);
     }
-    vector<int>s(q);
+    vector<int>S(q);
     for(int i=1;i<=q;i++)
-        s[i-1]=res[i];
-    return s;
+        S[i-1]=res[i];
+    return S;
 }
