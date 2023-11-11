@@ -11,7 +11,7 @@
 using namespace std;
 namespace Geometry
 {
-    const double eps=1e-10;
+    const double eps=1e-12;
     const double PI=acos(-1);
     const double INF=1e18;
     bool equal(double a,double b)
@@ -28,11 +28,11 @@ namespace Geometry
     }
     bool less_equal(double a,double b)
     {
-        return less(a,b)||equal(a,b);
+        return b-a>-eps;
     }
     bool greater_equal(double a,double b)
     {
-        return greater(a,b)||equal(a,b);
+        return a-b>-eps;
     }
     class Point
     {
@@ -81,6 +81,10 @@ namespace Geometry
         friend bool operator == (const Point &a,const Point &b)
         {
             return equal(a.x,b.x)&&equal(a.y,b.y);
+        }
+        friend bool operator != (const Point &a,const Point &b)
+        {
+            return (!equal(a.x,b.x))||(!equal(a.y,b.y));
         }
         friend bool operator < (const Point &a,const Point &b)
         {
@@ -208,6 +212,19 @@ namespace Geometry
             Point u=projection(p);
             if(direction(u)==ON_SEGMENT) return Geometry::distance(u,p);
             else return min(Geometry::distance(a,p),Geometry::distance(b,p));
+        }
+        Point middle_point()const
+        {
+            return (a+b)/2;
+        }
+        Line perpendicular_bisector()const
+        {
+            Point p=middle_point();
+            return Line(p,p+(b-a).rotate(PI/2));
+        }
+        double length()const
+        {
+            return Geometry::distance(a,b);
         }
         friend istream &operator>>(istream &in,Line &obj)
         {
@@ -625,11 +642,19 @@ namespace Geometry
             out<<obj.o<<" "<<obj.r;
             return out;
         }
+        friend bool operator==(const Circle &a,const Circle &b)
+        {
+            return a.o==b.o&&equal(a.r,b.r); 
+        }
+        friend bool operator!=(const Circle &a,const Circle &b)
+        {
+            return a.o!=b.o||(!equal(a.r,b.r)); 
+        }
         double area()const
         {
             return PI*r*r;
         }
-        bool tangent(const Line &l)const
+        bool is_tangent(const Line &l)const
         {
             return equal(Geometry::distance(l.projection(o),o),r);
         }
@@ -666,13 +691,51 @@ namespace Geometry
             if(equal(d,r)) return {p};
             return cross_point(Circle(p,sqrt(d*d-r*r)));
         }
+        vector<Line>common_tangent_out(const Circle &c)const
+        {
+            assert(*this!=c);
+            if(equal(r,c.r))
+            {
+                Point p=(c.o-o).unit().rotate(PI/2)*r;
+                return {Line(o-p,c.o-p),Line(o+p,c.o+p)};
+            }
+            double d=distance(o,c.o);
+            if(less(d,abs(r-c.r))) return {};
+            if(equal(d,abs(r-c.r)))
+            {
+                Point p;
+                if(r>c.r) p=o+(c.o-o).unit()*r;
+                else p=c.o+(o-c.o).unit()*c.r;
+                return {Line(p,p)}; 
+            }
+            Point p((o.x*c.r-c.o.x*r)/(c.r-r),(o.y*c.r-c.o.y*r)/(c.r-r));
+            vector<Point>p1=tangent(p),p2=c.tangent(p);
+            assert((int)p1.size()==2&&(int)p2.size()==2);
+            return {Line(p1[0],p2[0]),Line(p1[1],p2[1])};
+        }
+        vector<Line>common_tangent_in(const Circle &c)const
+        {
+            assert(*this!=c);
+            double d=distance(o,c.o);
+            if(less(d,abs(r+c.r))) return {};
+            if(equal(d,abs(r+c.r)))
+            {
+                Point p=o+(c.o-o).unit()*r;
+                return {Line(p,p)}; 
+            }
+            Point p((o.x*c.r+c.o.x*r)/(r+c.r),(o.y*c.r+c.o.y*r)/(r+c.r));
+            vector<Point>p1=tangent(p),p2=c.tangent(p);
+            assert((int)p1.size()==2&&(int)p2.size()==2);
+            return {Line(p1[0],p2[0]),Line(p1[1],p2[1])};
+        }
         vector<Line>common_tangent(const Circle &c)const
         {
+            assert(*this!=c);
             vector<Line>f=common_tangent_out(c),g=common_tangent_in(c);
             for(const Line &l:g)
                 f.emplace_back(l);
             g.clear();
-            sort(f.begin(),f.end(),[](const Line &x,const Line &y){return x.a.x<y.a.x||(x.a.x==y.a.x&&x.a.y<y.a.y);});
+            sort(f.begin(),f.end(),[](const Line &x,const Line &y){return x.a.x<y.a.x||(x.a.x==x.a.x&&x.a.y<x.a.y);});
             return f;
         }
         double intersection_area(const Point &a,const Point &b)const
@@ -703,36 +766,6 @@ namespace Geometry
             double alpha=acos((d*d+r*r-c.r*c.r)/(2*d*r))*2,beta=acos((d*d+c.r*c.r-r*r)/(2*d*c.r))*2;
             double s1=alpha*r*r/2,s2=beta*c.r*c.r/2,s3=sin(alpha)*r*r/2+sin(beta)*c.r*c.r/2;
             return s1+s2-s3;
-        }
-    private:
-        vector<Line>common_tangent_out(const Circle &c)const
-        {
-            if(equal(r,c.r))
-            {
-                Point p=(c.o-o).unit().rotate(PI/2)*r;
-                return {Line(o-p,c.o-p),Line(o+p,c.o+p)};
-            }
-            double d=distance(o,c.o);
-            if(less(d,abs(r-c.r))) return {};
-            Point p((o.x*c.r-c.o.x*r)/(c.r-r),(o.y*c.r-c.o.y*r)/(c.r-r));
-            vector<Point>p1=tangent(p),p2=c.tangent(p);
-            vector<Line>res;
-            for(const Point &u:p1)
-                for(const Point &v:p2)
-                    if(u==v||tangent(Line(u,v))) res.emplace_back(Line(u,v));
-            return res;
-        }
-        vector<Line>common_tangent_in(const Circle &c)const
-        {
-            double d=distance(o,c.o);
-            if(less_equal(d,abs(r-c.r))) return {};
-            Point p((o.x*c.r+c.o.x*r)/(r+c.r),(o.y*c.r+c.o.y*r)/(r+c.r));
-            vector<Point>p1=tangent(p),p2=c.tangent(p);
-            vector<Line>res;
-            for(const Point &u:p1)
-                for(const Point &v:p2)
-                    if(u==v||tangent(Line(u,v))) res.emplace_back(Line(u,v));
-            return res;
         }
     };
     const int SEPARATED=4,CIRCUMSCRIBED=3,INTERSECTED=2,INSCRIBED=1,INCLUDED=0;

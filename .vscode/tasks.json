@@ -15,7 +15,10 @@
                 "-std=c++17",
                 "-O2",
                 "-Wall",
-                "'-Wl,--stack=214749647'"
+                "'-Wl,--stack=214749647'",
+                "-fsanitize=undefined",
+                "-fsanitize-undefined-trap-on-error",
+                "-D_GLIBCXX_DEBUG"
             ],
             "options": {
                 "cwd": "C:\\Program Files (x86)\\Dev-Cpp\\MinGW64\\bin"

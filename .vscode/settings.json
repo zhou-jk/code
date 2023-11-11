@@ -111,6 +111,7 @@
         "semaphore": "cpp",
         "spanstream": "cpp",
         "stacktrace": "cpp",
-        "syncstream": "cpp"
+        "syncstream": "cpp",
+        "math.h": "c"
     }
 }

@@ -53,7 +53,7 @@ int main()
                             break;
                         }
                     }
-                    if(ok)2
+                    if(ok)
                     {
                         flag=true;
                         break;

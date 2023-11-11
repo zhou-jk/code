@@ -28,6 +28,17 @@ int lca(int u,int v)
     if(dfn[mn[u][d]]<dfn[mn[v-(1<<d)+1][d]]) return mn[u][d];
     else return mn[v-(1<<d)+1][d];
 }
+void init_lca(int n)
+{
+    lg2[0]=-1;
+    for(int i=1;i<=n;i++)
+        lg2[i]=lg2[i/2]+1;
+    for(int j=1;(1<<j)<=n;j++)
+        for(int i=1;i+(1<<j)-1<=n;i++)
+            if(dfn[mn[i][j-1]]<dfn[mn[i+(1<<(j-1))][j-1]]) mn[i][j]=mn[i][j-1];
+            else mn[i][j]=mn[i+(1<<(j-1))][j-1];
+    return;
+}
 int main()
 {
     scanf("%d%d%d",&n,&q,&s);
@@ -39,13 +50,7 @@ int main()
         G[y].emplace_back(x);
     }
     dfs(s,0);
-    lg2[0]=-1;
-    for(int i=1;i<=n;i++)
-        lg2[i]=lg2[i/2]+1;
-    for(int j=1;(1<<j)<=n;j++)
-        for(int i=1;i+(1<<j)-1<=n;i++)
-            if(dfn[mn[i][j-1]]<dfn[mn[i+(1<<(j-1))][j-1]]) mn[i][j]=mn[i][j-1];
-            else mn[i][j]=mn[i+(1<<(j-1))][j-1];
+    init_lca(n);
     while(q--)
     {
         int u,v;

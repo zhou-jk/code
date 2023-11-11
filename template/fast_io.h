@@ -18,10 +18,16 @@ public:
         (pw<SIZE?fw[pw++]=(ch):(fwrite(fw,1,SIZE,stdout),fw[(pw=0)++]=(ch)));
         return;
     }
-    ~Fast_char()
+    void flush()
     {
         fwrite(fw,1,pw,stdout);
+        fflush(stdout);
+        pw=0;
         return;
+    }
+    ~Fast_char()
+    {
+        flush();
     }
 }fast_char;
 #define getchar fast_char.getc

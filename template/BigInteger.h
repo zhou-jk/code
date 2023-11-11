@@ -77,6 +77,9 @@ public:
     BigInteger operator*(const BigInteger &) const;
     BigInteger operator/(const BigInteger &) const;
     BigInteger operator%(const BigInteger &) const;
+    BigInteger operator^(const BigInteger &) const;
+    BigInteger operator&(const BigInteger &) const;
+    BigInteger operator|(const BigInteger &) const;
 
     // compound assignment operators
     BigInteger &operator+=(const BigInteger &obj)
@@ -136,6 +139,10 @@ protected:
     BigInteger &sub(const BigInteger &);
     BigInteger &mul(const BigInteger &, const BigInteger &);
     BigInteger &div(BigInteger &, BigInteger, div_type = division);
+    BigInteger &xor_(const BigInteger &);
+    BigInteger &and_(const BigInteger &);
+    BigInteger &or_(const BigInteger &);
+    vector<int> divide() const;
 
 private:
     int sign_;
@@ -289,7 +296,12 @@ BigInteger &BigInteger::add(const BigInteger &obj)
     {
         long long tmp = (long long)val_[i] + obj.val_[i];
         if (tmp >= base_)
-            tmp -= base_, ++val_[i + 1];
+        {
+            tmp -= base_;
+            if (i + 1 >= (int)val_.size())
+                val_.push_back(0);
+            ++val_[i + 1];
+        }
         val_[i] = tmp;
     }
     return delZero();
@@ -302,11 +314,21 @@ BigInteger &BigInteger::sub(const BigInteger &obj)
     {
         long long tmp = (long long)val_[i] - obj.val_[i];
         if (tmp < 0)
-            tmp += base_, --val_[i + 1];
+        {
+            tmp += base_;
+            if (i + 1 >= (int)val_.size())
+                val_.push_back(0);
+            --val_[i + 1];
+        }
         val_[i] = tmp;
     }
-    while (val_[pos] < 0)
-        val_[pos] += base_, --val_[++pos];
+    while (pos < (int)val_.size() && val_[pos] < 0)
+    {
+        val_[pos] += base_;
+        if (pos + 1 >= (int)val_.size())
+            val_.push_back(0);
+        --val_[++pos];
+    }
     return delZero();
 }
 
@@ -348,10 +370,46 @@ BigInteger &BigInteger::div(BigInteger &a, BigInteger b, div_type typ)
     }
     return typ == division ? delZero() : a;
 }
-int main()
+vector<int> BigInteger::divide() const
 {
-    BigInteger a,b;
-    cin>>a>>b;
-    cout<<a+b<<"\n"<<a-b<<"\n"<<a*b<<"\n"<<a/b<<"\n"<<a%b;
-    return 0;
+    int len = val_.size() * __lg(base_);
+    vector<BigInteger> pw(len + 1);
+    pw[0] = 1;
+    for (int i = 1; i <= len; i++)
+        pw[i] = pw[i - 1] + pw[i - 1];
+    BigInteger tmp = *this;
+    vector<int> a(len + 1);
+    for (int i = len; i >= 0; i--)
+    {
+        if (tmp.cmp(pw[i]) > 0)
+            tmp -= pw[i], a[i] = 1;
+        else
+            a[i] = 0;
+    }
+    while (!a.empty() && a.back() == 0)
+        a.pop_back();
+    return a;
+}
+BigInteger BigInteger::operator^(const BigInteger &obj) const
+{
+    vector<int> a = divide(), b = obj.divide();
+    int len = max(a.size(), b.size());
+    vector<int> c(len);
+    vector<BigInteger> pw(len);
+    pw[0] = 1;
+    for (int i = 1; i < len; i++)
+        pw[i] = pw[i - 1] + pw[i - 1];
+    for (int i = 0; i < len; i++)
+    {
+        c[i] = 0;
+        if (i < (int)a.size())
+            c[i] ^= a[i];
+        if (i < (int)b.size())
+            c[i] ^= b[i];
+    }
+    BigInteger res = 0;
+    for (int i = 0; i < len; i++)
+        if (c[i])
+            res += pw[i];
+    return res;
 }
