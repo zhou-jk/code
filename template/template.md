@@ -1,1539 +1,5 @@
-#### Max Flow
-
-```cpp
-#include<iostream>
-#include<cstdio>
-#include<queue>
-using namespace std;
-const int N=205,M=10005;
-const long long INF=4557430888798830399;
-struct Edge
-{
-	int from,to,next;
-	long long val;
-}edge[M];
-int cur[N],head[N],cnt=1;
-int n,m,s,t;
-void add_edge(int u,int v,int w)
-{
-	cnt++;
-    edge[cnt].from=u;
-	edge[cnt].to=v;
-	edge[cnt].val=w;
-	edge[cnt].next=head[u];
-	head[u]=cnt;
-	return;
-}
-int dep[N];
-bool bfs(int s,int t)
-{
-    for(int i=1;i<=n;i++)
-        dep[i]=-1;
-	queue<int>q;
-	q.push(s);
-	dep[s]=0;
-	while(!q.empty())
-	{
-		int u=q.front();
-		q.pop();
-		for(int i=head[u];i;i=edge[i].next)
-		{
-			int v=edge[i].to;
-			if(dep[v]!=-1||edge[i].val<=0) continue;
-			dep[v]=dep[u]+1;
-			q.push(v);
-		}
-	}
-	return dep[t]!=-1;
-}
-int pre[N];
-long long dfs(int u,long long flow)
-{
-    if(u==t)
-    {
-        
-    }
-	if(u==t||flow==0) return flow;
-	long long used=0;
-	for(int &i=cur[u];i;i=edge[i].next)
-	{
-		int v=edge[i].to;
-		if(dep[v]!=dep[u]+1||edge[i].val<=0) continue;
-		long long now=dfs(v,min(flow,(long long)edge[i].val));
-		flow-=now;
-		edge[i].val-=now;
-		edge[i^1].val+=now;
-		used+=now;
-		if(flow==0) break;
-	}
-	return used;
-}
-int gap[N];
-long long isap()
-{
-    bfs(t,s);
-    for(int i=1;i<=n;i++)
-        gap[i]=0;
-    for(int i=1;i<=n;i++)
-        gap[dep[i]]++;
-    int x=s;
-    for(int i=1;i<=n;i++)
-        cur[i]=head[i];
-    while(dep[s]<n)
-    {
-        if(x==t)
-        {
-
-        }
-    }
-}
-long long dinic()
-{
-	long long res=0;
-	while(bfs(s,t))
-	{
-        for(int i=1;i<=n;i++)
-            cur[i]=head[i];
-		res+=dfs(s,INF);
-	}
-	return res;
-}
-int main()
-{
-	scanf("%d%d%d%d",&n,&m,&s,&t);
-	for(int i=1;i<=m;i++)
-	{
-		int x,y,z;
-		scanf("%d%d%d",&x,&y,&z);
-		add_edge(x,y,z);
-		add_edge(y,x,0);
-	}
-	printf("%lld",dinic());
-	return 0;
-}
-```
-
-#### Min Cost
-```cpp
-#include<iostream>
-#include<cstdio>
-#include<cstring>
-#include<queue>
-using namespace std;
-const int N=5005,M=100005;
-const long long INF=4557430888798830399;
-struct Edge
-{
-	int to,next;
-	int cost;
-	long long flow;
-}edge[M];
-int cur[N],head[N],cnt=1;
-int n,m,s,t;
-void add_edge(int u,int v,int c,int f)
-{
-	cnt++;
-	edge[cnt].to=v;
-	edge[cnt].cost=c;
-	edge[cnt].flow=f;
-	edge[cnt].next=head[u];
-	head[u]=cnt;
-	return;
-}
-long long dis[N];
-bool spfa()
-{
-	static bool vis[N];
-	memset(vis,false,sizeof(vis));
-	memset(dis,63,sizeof(dis));
-	queue<int>q;
-	vis[s]=true;
-	dis[s]=0;
-	q.push(s);
-	while(!q.empty())
-	{
-		int u=q.front();
-		q.pop();
-		vis[u]=false;
-		for(int i=head[u];i;i=edge[i].next)
-		{
-			int v=edge[i].to;
-			if(edge[i].flow<=0) continue;
-			if(dis[v]>dis[u]+edge[i].cost)
-			{
-				dis[v]=dis[u]+edge[i].cost;
-				if(!vis[v])
-				{
-					vis[v]=true;
-					q.push(v);
-				}
-			}
-		}
-	}
-	return dis[t]!=INF;
-}
-bool book[N];
-pair<long long,long long> dfs(int u,long long flow)
-{
-	if(u==t||flow==0) return make_pair(flow,0);
-	book[u]=true;
-	long long used=0,res=0;
-	for(int &i=cur[u];i;i=edge[i].next)
-	{
-		int v=edge[i].to;
-		if(book[v]||dis[v]!=dis[u]+edge[i].cost||edge[i].flow<=0) continue;
-		pair<long long,long long>t=dfs(v,min(flow,edge[i].flow));
-		long long now=t.first;
-		res+=t.second+now*edge[i].cost;
-		flow-=now;
-		edge[i].flow-=now;
-		edge[i^1].flow+=now;
-		used+=now;
-		if(flow==0) break;
-	}
-	book[u]=false;
-	return make_pair(used,res);
-}
-pair<long long,long long> dinic()
-{
-	long long ans=0,Min=0;
-	while(spfa())
-	{
-		memcpy(cur,head,sizeof(head));
-		pair<long long,long long> res=dfs(s,INF);
-		ans+=res.first,Min+=res.second;
-	}
-	return make_pair(ans,Min);
-}
-int main()
-{
-	scanf("%d%d%d%d",&n,&m,&s,&t);
-	for(int i=1;i<=m;i++)
-	{
-		int x,y,z,c;
-		scanf("%d%d%d%d",&x,&y,&z,&c);
-		add_edge(x,y,c,z);
-		add_edge(y,x,-c,0);
-	}
-	pair<long long,long long> ans=dinic();
-	printf("%lld %lld",ans.first,ans.second);
-	return 0;
-}
-```
-
-#### NTT
-
-```cpp
-#include <cstdio>
-#include <cmath>
-#include <ctime>
-#include <vector>
-#include <random>
-#include <functional>
-#include <algorithm>
-namespace poly_define
-{
-    const int g = 3;
-    const int MOD = 998244353;
-    int n;
-    int ksm(int a, int b)
-    {
-        int res = 1;
-
-        while (b)
-        {
-            if (b & 1)
-                res = 1LL * res * a % MOD;
-
-            a = 1LL * a * a % MOD, b >>= 1;
-        }
-
-        return res;
-    }
-    int getinv(int x)
-    {
-        return ksm(x, MOD - 2);
-    }
-    std::vector<int> W[2];
-    void init_omega(int n)
-    {
-        for (int len = 1; len <= n; len <<= 1)
-        {
-            int w = ksm(g, (MOD - 1) / len), iw = getinv(w);
-            W[0][len] = W[1][len] = 1;
-
-            for (int k = 1; k < len; k++)
-                W[0][len + k] = 1LL * W[0][len + k - 1] * w % MOD, W[1][len + k] = 1LL * W[1][len + k - 1] * iw % MOD;
-        }
-
-        return;
-    }
-    std::vector<int> inv;
-    void init_inv(int n)
-    {
-        inv[1] = 1;
-
-        for (int i = 2; i <= n; i++)
-            inv[i] = 1LL * (MOD - MOD / i) * inv[MOD % i] % MOD;
-
-        return;
-    }
-    void init_poly(int _n)
-    {
-        n = 1;
-        while (n <= _n)
-            n <<= 1;
-        W[0].resize(n * 4 + 1);
-        W[1].resize(n * 4 + 1);
-        init_omega(n * 2);
-        inv.resize(n * 2 + 1);
-        init_inv(n * 2);
-        return;
-    }
-    typedef std::vector<int> poly;
-    poly operator+(const poly &a, const poly &b)
-    {
-        poly f = a, g = b;
-        int n = std::max(a.size(), b.size());
-        f.resize(n), g.resize(n);
-        poly c(n);
-
-        for (int i = 0; i < n; i++)
-        {
-            c[i] = f[i] + g[i];
-
-            if (c[i] >= MOD)
-                c[i] -= MOD;
-        }
-
-        return c;
-    }
-    poly operator-(const poly &a, const poly &b)
-    {
-        poly f = a, g = b;
-        int n = std::max(a.size(), b.size());
-        f.resize(n), g.resize(n);
-        poly c(n);
-
-        for (int i = 0; i < n; i++)
-        {
-            c[i] = f[i] - g[i];
-
-            if (c[i] < 0)
-                c[i] += MOD;
-        }
-
-        return c;
-    }
-    poly operator+(const poly &F, const int &x)
-    {
-        poly f = F;
-        f[0] += x;
-
-        if (f[0] >= MOD)
-            f[0] -= MOD;
-
-        return f;
-    }
-    poly operator+(const int &x, const poly &F)
-    {
-        poly f = F;
-        f[0] += x;
-
-        if (f[0] >= MOD)
-            f[0] -= MOD;
-
-        return f;
-    }
-    poly operator-(const poly &F, const int &x)
-    {
-        poly f = F;
-        f[0] -= x;
-
-        if (f[0] < 0)
-            f[0] += MOD;
-
-        return f;
-    }
-    poly operator-(const int &x, const poly &F)
-    {
-        poly f = F;
-        int n = f.size() - 1;
-
-        for (int i = 0; i <= n; i++)
-            f[i] = MOD - f[i];
-
-        f[0] += x;
-
-        if (f[0] >= MOD)
-            f[0] -= MOD;
-
-        return f;
-    }
-    poly ntt(const poly &F, const poly &G, const std::function<int(int, int)> &mul)
-    {
-        poly f = F, g = G;
-        int n = f.size() - 1, m = g.size() - 1;
-        m += n, n = 1;
-
-        while (n <= m)
-            n <<= 1;
-
-        f.resize(n);
-        g.resize(n);
-        std::vector<int> rev(n);
-
-        for (int i = 0; i < n; i++)
-        {
-            rev[i] = rev[i >> 1] >> 1;
-
-            if (i & 1)
-                rev[i] |= n >> 1;
-        }
-
-        static const int BIT = 15;
-        std::function<void(poly &)> dft = [=](poly &F)
-        {
-            int n = F.size();
-            std::vector<unsigned long long> f(n);
-
-            for (int i = 0; i < n; i++)
-                f[i] = F[rev[i]];
-
-            for (int len = 2; len <= n; len <<= 1)
-            {
-                if (len & (1 << BIT))
-                {
-                    for (int i = 0; i < n; i++)
-                        f[i] %= MOD;
-                }
-
-                for (int i = 0; i < n; i += len)
-                    for (int k = i; k < i + len / 2; k++)
-                    {
-                        unsigned long long l = f[k];
-                        int r = W[0][len + k - i] * f[k + len / 2] % MOD;
-                        f[k] = l + r;
-                        f[k + len / 2] = l + MOD - r;
-                    }
-            }
-
-            for (int i = 0; i < n; i++)
-                F[i] = f[i] % MOD;
-
-            return;
-        };
-        dft(f);
-        dft(g);
-
-        for (int i = 0; i < n; i++)
-            f[i] = mul(f[i], g[i]);
-
-        std::function<void(poly &)> idft = [=](poly &F)
-        {
-            int n = F.size();
-            std::vector<unsigned long long> f(n);
-
-            for (int i = 0; i < n; i++)
-                f[i] = F[rev[i]];
-
-            for (int len = 2; len <= n; len <<= 1)
-            {
-                if (len & (1 << BIT))
-                {
-                    for (int i = 0; i < n; i++)
-                        f[i] %= MOD;
-                }
-
-                for (int i = 0; i < n; i += len)
-                    for (int k = i; k < i + len / 2; k++)
-                    {
-                        unsigned long long l = f[k];
-                        int r = W[1][len + k - i] * f[k + len / 2] % MOD;
-                        f[k] = l + r;
-                        f[k + len / 2] = l + MOD - r;
-                    }
-            }
-
-            for (int i = 0; i < n; i++)
-                F[i] = f[i] % MOD;
-
-            int invn = getinv(n);
-
-            for (int i = 0; i < n; i++)
-                F[i] = 1LL * F[i] * invn % MOD;
-
-            return;
-        };
-        idft(f);
-        f.resize(m + 1);
-        return f;
-    }
-    poly operator*(const poly &F, const poly &G)
-    {
-        return ntt(F, G, [=](const int &x, const int &y)
-                   { return 1LL * x * y % MOD; });
-    }
-    poly operator*(const poly &F, const int &x)
-    {
-        poly f = F;
-        int n = f.size() - 1;
-
-        for (int i = 0; i <= n; i++)
-            f[i] = 1LL * f[i] * x % MOD;
-
-        return f;
-    }
-    poly operator*(const int &x, const poly &F)
-    {
-        poly f = F;
-        int n = f.size() - 1;
-
-        for (int i = 0; i <= n; i++)
-            f[i] = 1LL * f[i] * x % MOD;
-
-        return f;
-    }
-    poly getinv(const poly &F)
-    {
-        poly f = F;
-        int m = f.size() - 1;
-        int n = 1;
-
-        while (n <= m)
-            n <<= 1;
-
-        f.resize(n);
-        poly g = {getinv(f[0])};
-
-        for (int m = 2; m <= n; m <<= 1)
-        {
-            poly t(f.begin(), f.begin() + m);
-            g = ntt(t, g, [=](const int &x, const int &y)
-                    { return (2 * y - 1LL * y * y % MOD * x % MOD + MOD) % MOD; });
-            g.resize(m);
-        }
-
-        g.resize(m + 1);
-        return g;
-    }
-    int w;
-    struct Complex
-    {
-        int real, imag;
-        bool operator==(const Complex &b) const
-        {
-            return real == b.real && imag == b.imag;
-        }
-        Complex operator*(const Complex &b) const
-        {
-            Complex res;
-            res.real = (1LL * real * b.real + 1LL * w * imag % MOD * b.imag) % MOD;
-            res.imag = (1LL * real * b.imag + 1LL * imag * b.real) % MOD;
-            return res;
-        }
-        friend Complex ksm(Complex a, int b)
-        {
-            Complex res = (Complex){
-                1, 0};
-
-            while (b)
-            {
-                if (b & 1)
-                    res = res * a;
-
-                a = a * a, b >>= 1;
-            }
-
-            return res;
-        }
-    };
-    int cipolla(int n)
-    {
-        static std::mt19937 myrand(time(NULL));
-
-        if (n == 0)
-            return 0;
-
-        std::function<bool(int)> check = [=](const int &n)
-        {
-            return ksm(n, (MOD - 1) / 2) == 1;
-        };
-
-        if (!check(n))
-            return -1;
-
-        int a = myrand() % (MOD - 1) + 1;
-
-        while (check((1LL * a * a - n + MOD) % MOD))
-            a = myrand() % (MOD - 1) + 1;
-
-        w = (1LL * a * a - n + MOD) % MOD;
-        Complex res = ksm((Complex){
-                              a, 1},
-                          (MOD + 1) / 2);
-        return res.real;
-    }
-    poly sqrt(const poly &F)
-    {
-        poly f = F;
-        int m = f.size() - 1;
-        int n = 1;
-
-        while (n <= m)
-            n <<= 1;
-
-        f.resize(n);
-        int g0 = cipolla(f[0]);
-        poly g = {std::min(g0, MOD - g0)};
-        int inv2 = getinv(2);
-
-        for (int m = 2; m <= n; m <<= 1)
-        {
-            poly t(f.begin(), f.begin() + m);
-            g.resize(m);
-            g = g * inv2 + ntt(t, getinv(g), [=](const int &x, const int &y)
-                               { return 1LL * inv2 * x % MOD * y % MOD; });
-            g.resize(m);
-        }
-
-        g.resize(m + 1);
-        return g;
-    }
-    poly operator/(const poly &F, const poly &G)
-    {
-        poly f = F, g = G;
-        int n = f.size() - 1, m = g.size() - 1;
-
-        if (n < m)
-            return poly(n - m + 1);
-
-        reverse(f.begin(), f.end());
-        reverse(g.begin(), g.end());
-        f.resize(n - m + 1);
-        g.resize(n - m + 1);
-        poly q = f * getinv(g);
-        q.resize(n - m + 1);
-        reverse(q.begin(), q.end());
-        return q;
-    }
-    poly operator%(const poly &F, const poly &G)
-    {
-        poly f = F, g = G, q = f / g;
-        int m = g.size() - 1;
-        g.resize(m);
-        q.resize(m);
-        poly c = g * q;
-        c.resize(m);
-        f.resize(m);
-        return f - c;
-    }
-    poly diff_calc(const poly &F)
-    {
-        poly f = F;
-        int n = f.size() - 1;
-        poly g(n);
-
-        for (int i = 1; i <= n; i++)
-            g[i - 1] = 1LL * f[i] * i % MOD;
-
-        return g;
-    }
-    poly inte_calc(const poly &G)
-    {
-        poly g = G;
-        int n = g.size() - 1;
-        poly f(n + 2);
-
-        for (int i = 1; i <= n + 1; i++)
-            f[i] = 1LL * g[i - 1] * inv[i] % MOD;
-
-        return f;
-    }
-    poly ln(const poly &F)
-    {
-        poly f = F;
-        int n = f.size() - 1;
-        poly g = diff_calc(f) * getinv(f);
-        g.resize(n + 1);
-        g = inte_calc(g);
-        g.resize(n + 1);
-        return g;
-    }
-    poly exp(const poly &F)
-    {
-        poly f = F;
-        int m = f.size() - 1;
-        int n = 1;
-
-        while (n <= m)
-            n <<= 1;
-
-        f.resize(n);
-        poly g = {1};
-
-        for (int m = 2; m <= n; m <<= 1)
-        {
-            poly t(f.begin(), f.begin() + m);
-            poly s = g;
-            g.resize(m);
-            g = s * (t - ln(g) + (poly){1});
-            g.resize(m);
-        }
-
-        g.resize(m + 1);
-        return g;
-    }
-    poly pow(const poly &F, const int &k)
-    {
-        poly f = F;
-        int n = f.size() - 1;
-        poly g(n + 1);
-        int pos = -1;
-
-        for (int i = 0; i <= n; i++)
-            if (f[i] > 0)
-            {
-                g[i] = f[i];
-                pos = i;
-                break;
-            }
-
-        if (pos == -1)
-            return g;
-
-        int mu = f[pos], invm = getinv(mu);
-
-        for (int i = 0; i <= n - pos; i++)
-            f[i] = 1LL * f[i + pos] * invm % MOD;
-
-        for (int i = n - pos + 1; i <= n; i++)
-            f[i] = 0;
-
-        g[pos] = 0;
-
-        if (1LL * pos * k <= n || pos == 0)
-        {
-            g = exp(k * ln(f));
-            int v = ksm(mu, k);
-
-            for (int i = n; i >= pos * k; i--)
-                g[i] = 1LL * g[i - pos * k] * v % MOD;
-
-            for (int i = pos * k - 1; i >= 0; i--)
-                g[i] = 0;
-        }
-
-        return g;
-    }
-    int poly_calc(const poly &F, const int &x)
-    {
-        poly f = F;
-        int n = f.size() - 1;
-        int fc = 1, res = 0;
-
-        for (int i = 0; i <= n; i++)
-            res = (res + 1LL * f[i] * fc) % MOD, fc = 1LL * fc * x % MOD;
-
-        return res;
-    }
-    poly poly_eval(const poly &F, const poly &a)
-    {
-        poly f = F;
-        int m = a.size();
-        std::vector<poly> g(m << 2);
-        std::function<void(int, int, int)> init_poly_eval = [&](int i, int l, int r)
-        {
-            if (l == r)
-            {
-                g[i] = (poly){
-                    MOD - a[l], 1};
-                return;
-            }
-
-            int mid = (l + r) / 2;
-            init_poly_eval(i * 2, l, mid);
-            init_poly_eval(i * 2 + 1, mid + 1, r);
-            g[i] = g[i * 2] * g[i * 2 + 1];
-            return;
-        };
-        init_poly_eval(1, 0, m - 1);
-        poly res(m);
-        std::function<void(int, int, int, const poly &)> solve_poly_eval = [&](int i, int l, int r, const poly &f)
-        {
-            if (l == r)
-            {
-                res[l] = f[0];
-                return;
-            }
-
-            int mid = (l + r) / 2;
-            solve_poly_eval(i * 2, l, mid, f % g[i * 2]);
-            solve_poly_eval(i * 2 + 1, mid + 1, r, f % g[i * 2 + 1]);
-            return;
-        };
-        solve_poly_eval(1, 0, m - 1, f);
-        return res;
-    }
-    struct Point
-    {
-        int x, y;
-    };
-    poly poly_inte(const std::vector<Point> &p)
-    {
-        int n = p.size() - 1;
-        std::vector<poly> g(n << 2);
-        std::function<void(int, int, int)> init_poly_eval = [&](int i, int l, int r)
-        {
-            if (l == r)
-            {
-                g[i] = (poly){
-                    MOD - p[l].x, 1};
-                return;
-            }
-
-            int mid = (l + r) / 2;
-            init_poly_eval(i * 2, l, mid);
-            init_poly_eval(i * 2 + 1, mid + 1, r);
-            g[i] = g[i * 2] * g[i * 2 + 1];
-            return;
-        };
-        init_poly_eval(1, 0, n);
-        poly x(n + 1);
-
-        for (int i = 0; i <= n; i++)
-            x[i] = p[i].x;
-
-        poly F = poly_eval(diff_calc(g[1]), x);
-        std::vector<int> a(n + 1);
-
-        for (int i = 0; i <= n; i++)
-            a[i] = 1LL * p[i].y * getinv(F[i]) % MOD;
-
-        std::vector<poly> res(n << 2);
-        std::function<void(int, int, int)> solve_poly_inte = [&](int i, int l, int r)
-        {
-            if (l == r)
-            {
-                res[i] = {a[l]};
-                return;
-            }
-
-            int mid = (l + r) / 2;
-            solve_poly_inte(i * 2, l, mid);
-            solve_poly_inte(i * 2 + 1, mid + 1, r);
-            res[i] = res[i * 2] * g[i * 2 + 1] + res[i * 2 + 1] * g[i * 2];
-            return;
-        };
-        solve_poly_inte(1, 0, n);
-        return res[1];
-    }
-    poly operator|(const poly &F, const poly &G)
-    {
-        poly f = F, g = G;
-        int m = std::max(f.size() - 1, g.size() - 1), n = 1;
-
-        while (n <= m)
-            n <<= 1;
-
-        f.resize(n), g.resize(n);
-        std::function<void(poly &)> fwt = [=](poly &F)
-        {
-            int n = F.size();
-
-            for (int len = 2; len <= n; len <<= 1)
-                for (int i = 0; i < n; i += len)
-                    for (int k = i; k < i + len / 2; k++)
-                        F[k + len / 2] = (F[k + len / 2] + F[k]) % MOD;
-
-            return;
-        };
-        fwt(f);
-        fwt(g);
-
-        for (int i = 0; i < n; i++)
-            f[i] = 1LL * f[i] * g[i] % MOD;
-
-        std::function<void(poly &)> ifwt = [=](poly &F)
-        {
-            int n = F.size();
-
-            for (int len = 2; len <= n; len <<= 1)
-                for (int i = 0; i < n; i += len)
-                    for (int k = i; k < i + len / 2; k++)
-                        F[k + len / 2] = (F[k + len / 2] - F[k] + MOD) % MOD;
-
-            return;
-        };
-        ifwt(f);
-        return f;
-    }
-    poly operator&(const poly &F, const poly &G)
-    {
-        poly f = F, g = G;
-        int m = std::max(f.size() - 1, g.size() - 1), n = 1;
-
-        while (n <= m)
-            n <<= 1;
-
-        f.resize(n), g.resize(n);
-        std::function<void(poly &)> fwt = [=](poly &F)
-        {
-            int n = F.size();
-
-            for (int len = 2; len <= n; len <<= 1)
-                for (int i = 0; i < n; i += len)
-                    for (int k = i; k < i + len / 2; k++)
-                        F[k] = (F[k] + F[k + len / 2]) % MOD;
-
-            return;
-        };
-        fwt(f);
-        fwt(g);
-
-        for (int i = 0; i < n; i++)
-            f[i] = 1LL * f[i] * g[i] % MOD;
-
-        std::function<void(poly &)> ifwt = [=](poly &F)
-        {
-            int n = F.size();
-
-            for (int len = 2; len <= n; len <<= 1)
-                for (int i = 0; i < n; i += len)
-                    for (int k = i; k < i + len / 2; k++)
-                        F[k] = (F[k] - F[k + len / 2] + MOD) % MOD;
-
-            return;
-        };
-        ifwt(f);
-        return f;
-    }
-    poly operator^(const poly &F, const poly &G)
-    {
-        poly f = F, g = G;
-        int m = std::max(f.size() - 1, g.size() - 1), n = 1;
-
-        while (n <= m)
-            n <<= 1;
-
-        f.resize(n), g.resize(n);
-        std::function<void(poly &)> fwt = [=](poly &F)
-        {
-            int n = F.size();
-
-            for (int len = 2; len <= n; len <<= 1)
-                for (int i = 0; i < n; i += len)
-                    for (int k = i; k < i + len / 2; k++)
-                    {
-                        int l = F[k], r = F[k + len / 2];
-                        F[k] = (l + r) % MOD;
-                        F[k + len / 2] = (l - r + MOD) % MOD;
-                    }
-
-            return;
-        };
-        fwt(f);
-        fwt(g);
-
-        for (int i = 0; i < n; i++)
-            f[i] = 1LL * f[i] * g[i] % MOD;
-
-        std::function<void(poly &)> ifwt = [=](poly &F)
-        {
-            int n = F.size();
-
-            for (int len = 2; len <= n; len <<= 1)
-                for (int i = 0; i < n; i += len)
-                    for (int k = i; k < i + len / 2; k++)
-                    {
-                        int l = F[k], r = F[k + len / 2];
-                        F[k] = (l + r) % MOD;
-                        F[k + len / 2] = (l - r + MOD) % MOD;
-                    }
-
-            int invn = getinv(n);
-
-            for (int i = 0; i < n; i++)
-                F[i] = 1LL * F[i] * invn % MOD;
-
-            return;
-        };
-        ifwt(f);
-        return f;
-    }
-}
-using poly_define::init_poly;
-using poly_define::poly;
-using poly_define::operator+;
-using poly_define::operator-;
-using poly_define::operator*;
-using poly_define::operator/;
-using poly_define::operator%;
-using poly_define::operator^;
-using poly_define::operator|;
-using poly_define::diff_calc;
-using poly_define::exp;
-using poly_define::getinv;
-using poly_define::inte_calc;
-using poly_define::ln;
-using poly_define::poly_calc;
-using poly_define::poly_eval;
-using poly_define::poly_inte;
-using poly_define::pow;
-using poly_define::sqrt;
-using namespace std;
-int main()
-{
-    init_poly(1000000);
-    int n, m;
-    scanf("%d%d", &n, &m);
-    poly f, g;
-    f.resize(n + 1), g.resize(m + 1);
-    for (int i = 0; i <= n; i++)
-        scanf("%d", &f[i]);
-    for (int i = 0; i <= m; i++)
-        scanf("%d", &g[i]);
-    poly res = f * g;
-    for (int u : res)
-        printf("%d ", u);
-    return 0;
-}
-```
-
-#### MTT
-
-```cpp
-#include<iostream>
-#include<cstdio>
-#include<cmath>
-#include<cstdlib>
-#include<ctime>
-#include<vector>
-#include<random>
-#include<functional>
-#include<algorithm>
-using namespace std;
-const double PI=acos(-1);
-const int N=400005;
-int MOD;
-struct Complex
-{
-    double real,imag;
-    Complex():real(0),imag(0){} 
-    Complex(double xx,double yy):real(xx),imag(yy){}
-    Complex operator=(const int &b)
-    {
-        real=b,imag=0;
-        return *this;
-    }
-    Complex operator+(const Complex &b)const
-    {
-        return Complex(real+b.real,imag+b.imag);
-    }
-    Complex operator-(const Complex &b)const
-    {
-        return Complex(real-b.real,imag-b.imag);
-    }
-    Complex operator*(const Complex &b)const
-    {
-        return Complex(real*b.real-imag*b.imag,real*b.imag+imag*b.real);
-    }
-    friend Complex getinv(const Complex &rhs)
-    {
-        return Complex(rhs.real,-rhs.imag);
-    }
-};
-Complex W[2][N<<1];
-void init_omega(int n=400000)
-{
-    for(int len=1;len<=n;len<<=1)
-        for(int k=0;k<len;k++)
-            W[0][len+k]=Complex(cos(2*PI*k/len),sin(2*PI*k/len)),W[1][len+k]=Complex(cos(2*PI*k/len),-sin(2*PI*k/len));
-    return;
-}
-typedef vector<int> Poly;
-Poly mtt(const Poly &F,const Poly &G,const function<Complex(const Complex &,const Complex &)> &mul)
-{
-    int n=F.size()-1,m=G.size()-1;
-    vector<Complex> a(n+1),b(n+1),c(m+1),d(m+1);
-    for(int i=0;i<=n;i++)
-        a[i]=F[i]>>15,b[i]=F[i]&0x7fff;
-    for(int i=0;i<=m;i++)
-        c[i]=G[i]>>15,d[i]=G[i]&0x7fff;
-    m+=n,n=1;
-    while(n<=m) n<<=1;
-    a.resize(n),b.resize(n),c.resize(n),d.resize(n);
-    vector<int>rev(n);
-    for(int i=0;i<n;i++)
-    {
-        rev[i]=rev[i/2]>>1;
-        if(i&1) rev[i]|=n/2;
-    }
-    function<void(vector<Complex> &)> dft=[=](vector<Complex> &F)
-    {
-        int n=F.size();
-        vector<Complex> f(n);
-        for(int i=0;i<n;i++)
-            f[i]=F[rev[i]];
-        for(int len=2;len<=n;len<<=1)
-            for(int i=0;i<n;i+=len)
-                for(int k=i;k<i+len/2;k++)
-                {
-                    Complex l=f[k];
-                    Complex r=f[k+len/2]*W[0][len+k-i];
-                    f[k]=l+r;
-                    f[k+len/2]=l-r;
-                }
-        for(int i=0;i<n;i++)
-            F[i]=f[i];
-        return;
-    };
-    dft(a),dft(b),dft(c),dft(d);
-    vector<Complex> ac(n),ad(n),bc(n),bd(n);
-    for(int i=0;i<n;i++)
-        ac[i]=mul(a[i],c[i]),ad[i]=mul(a[i],d[i]),bc[i]=mul(b[i],c[i]),bd[i]=mul(b[i],d[i]);
-    function<void(vector<Complex> &)> idft=[=](vector<Complex> &F)
-    {
-        int n=F.size();
-        vector<Complex> f(n);
-        for(int i=0;i<n;i++)
-            f[i]=F[rev[i]];
-        for(int len=2;len<=n;len<<=1)
-            for(int i=0;i<n;i+=len)
-                for(int k=i;k<i+len/2;k++)
-                {
-                    Complex l=f[k];
-                    Complex r=f[k+len/2]*W[1][len+k-i];
-                    f[k]=l+r;
-                    f[k+len/2]=l-r;
-                }
-        for(int i=0;i<n;i++)
-            F[i]=f[i];
-        return;
-    };
-    idft(ac),idft(ad),idft(bc),idft(bd);
-    Poly AC(m+1),AD(m+1),BC(m+1),BD(m+1);
-    for(int i=0;i<=m;i++)
-        AC[i]=(long long)round(ac[i].real/n)%MOD,AD[i]=(long long)round(ad[i].real/n)%MOD,BC[i]=(long long)round(bc[i].real/n)%MOD,BD[i]=(long long)round(bd[i].real/n)%MOD;
-    Poly res(m+1);
-    for(int i=0;i<=m;i++)
-        res[i]=(((long long)(AC[i])<<30)+((long long)(AD[i]+BC[i])<<15)+BD[i])%MOD;
-    return res;
-}
-Poly operator*(const Poly &F,const Poly &G)
-{
-    return mtt(F,G,[=](const Complex &x,const Complex &y){return x*y;});
-}
-int main()
-{
-    init_omega();
-    int n,m;
-    scanf("%d%d%d",&n,&m,&MOD);
-    Poly f,g;
-    f.resize(n+1),g.resize(m+1);
-    for(int i=0;i<=n;i++)
-        scanf("%d",&f[i]);
-    for(int i=0;i<=m;i++)
-        scanf("%d",&g[i]);
-    Poly res=f*g;
-    for(int u:res)
-        printf("%d ",u);
-    return 0;
-}
-```
-
-#### 三模 NTT
-
-```cpp
-#include<iostream>
-#include<cstdio>
-#include<cmath>
-#include<cstdlib>
-#include<ctime>
-#include<vector>
-#include<random>
-#include<functional>
-#include<algorithm>
-using namespace std;
-const int N=(1<<19)+5;
-const int g=3;
-int MOD;
-const int MOD1=998244353,MOD2=1004535809,MOD3=469762049;
-int ksm(int a,int b,int P=MOD)
-{
-	int res=1;
-	while(b)
-	{
-		if(b&1) res=1LL*res*a%P;
-		a=1LL*a*a%P,b>>=1;
-	}
-	return res;
-}
-int getinv(int x,int P=MOD)
-{
-	return ksm(x,P-2,P);
-}
-struct Int
-{
-	int x1,x2,x3;
-	Int(int a=0,int b=0,int c=0)
-	{
-		x1=(a%MOD1+MOD1)%MOD1,x2=(b%MOD2+MOD2)%MOD2,x3=(c%MOD3+MOD3)%MOD3;
-		return;
-	}
-	Int(long long a,long long b,long long c)
-	{
-		x1=(a%MOD1+MOD1)%MOD1,x2=(b%MOD2+MOD2)%MOD2,x3=(c%MOD3+MOD3)%MOD3;
-		return;
-	}
-	Int operator=(int x)
-	{
-		*this=(Int){x,x,x};
-		return *this;
-	}
-	Int operator=(long long x)
-	{
-		*this=(Int){x,x,x};
-		return *this;
-	}
-	Int operator+(const Int &rhs)const
-	{
-		Int c=(Int){x1+rhs.x1,x2+rhs.x2,x3+rhs.x3};
-		return c;
-	}
-	Int operator-(const Int &rhs)const
-	{
-		Int c=(Int){x1-rhs.x1,x2-rhs.x2,x3-rhs.x3};
-		return c;
-	}
-	Int operator*(const Int &rhs)const
-	{
-		Int c=(Int){1LL*x1*rhs.x1,1LL*x2*rhs.x2,1LL*x3*rhs.x3};
-		return c;
-	}
-	Int operator/(const Int &rhs)const
-	{
-		Int c=(Int){1LL*x1*getinv(rhs.x1,MOD1),1LL*x2*getinv(rhs.x2,MOD2),1LL*x3*getinv(rhs.x3,MOD3)};
-		return c;
-	}
-	Int operator+=(const Int &rhs)
-	{
-		*this=*this+rhs;
-		return *this;
-	}
-	Int operator-=(const Int &rhs)
-	{
-		*this=*this-rhs;
-		return *this;
-	}
-	Int operator*=(const Int &rhs)
-	{
-		*this=*this*rhs;
-		return *this;
-	}
-	Int operator/=(const Int &rhs)
-	{
-		*this=*this/rhs;
-		return *this;
-	}
-	int to_int(int P=MOD)const
-	{
-		static const int INV12=getinv(MOD1,MOD2),INV123=getinv(1LL*MOD1*MOD2%MOD3,MOD3);
-		int k1=1LL*(x2-x1%MOD2+MOD2)*INV12%MOD2;
-		long long x4=x1+1LL*k1*MOD1;
-		int k4=(x3-x4%MOD3+MOD3)%MOD3*INV123%MOD3;
-		long long x=(x4+1LL*k4%P*(1LL*MOD1*MOD2%P)%P)%P;
-		return x;
-	}
-	friend Int getinv(const Int &rhs)
-	{
-		Int c=(Int){getinv(rhs.x1,MOD1),getinv(rhs.x2,MOD2),getinv(rhs.x3,MOD3)};
-		return c;
-	}
-	Int operator+(const int &rhs)const
-	{
-		return *this+(Int){rhs,rhs,rhs};
-	}
-	Int operator+(const long long &rhs)const
-	{
-		return *this+(Int){rhs,rhs,rhs};
-	}
-	Int operator-(const int &rhs)const
-	{
-		return *this-(Int){rhs,rhs,rhs};
-	}
-	Int operator-(const long long &rhs)const
-	{
-		return *this-(Int){rhs,rhs,rhs};
-	}
-	Int operator*(const int &rhs)const
-	{
-		return *this*(Int){rhs,rhs,rhs};
-	}
-	Int operator*(const long long &rhs)const
-	{
-		return *this*(Int){rhs,rhs,rhs};
-	}
-	Int operator/(const int &rhs)const
-	{
-		return *this*getinv((Int){rhs,rhs,rhs});
-	}
-	Int operator/(const long long &rhs)const
-	{
-		return *this*getinv((Int){rhs,rhs,rhs});
-	}
-	friend Int operator+(const int &lhs,const Int &rhs)
-	{
-		return rhs+lhs;
-	}
-	friend Int operator+(const long long &lhs,const Int &rhs)
-	{
-		return rhs+lhs;
-	}
-	friend Int operator-(const int &lhs,const Int &rhs)
-	{
-		return (Int){lhs,lhs,lhs}-rhs;
-	}
-	friend Int operator-(const long long &lhs,const Int &rhs)
-	{
-		return (Int){lhs,lhs,lhs}-rhs;
-	}
-	friend Int operator*(const int &lhs,const Int &rhs)
-	{
-		return rhs*lhs;
-	}
-	friend Int operator*(const long long &lhs,const Int &rhs)
-	{
-		return rhs*lhs;
-	}
-	friend Int operator/(const int &lhs,const Int &rhs)
-	{
-		return (Int){lhs,lhs,lhs}*getinv(rhs);
-	}
-	friend Int operator/(const long long &lhs,const Int &rhs)
-	{
-		return (Int){lhs,lhs,lhs}*getinv(rhs);
-	}
-};
-Int W[2][N<<1];
-void init_omega(int n=1<<19)
-{
-	for(int len=1;len<=n;len<<=1)
-	{
-		Int w=(Int){ksm(g,(MOD1-1)/len,MOD1),ksm(g,(MOD2-1)/len,MOD2),ksm(g,(MOD3-1)/len,MOD3)},iw=getinv(w);
-		W[0][len]=W[1][len]=1;
-		for(int k=1;k<len;k++)
-			W[0][len+k]=W[0][len+k-1]*w,W[1][len+k]=W[1][len+k-1]*iw;
-	}
-	return;
-}
-int inv[N];
-void init_inv(int n=1<<19)
-{
-	inv[1]=1;
-	for(int i=2;i<=n;i++)
-		inv[i]=1LL*(MOD-MOD/i)*inv[MOD%i]%MOD;
-	return;
-}
-typedef vector<int> Poly;
-Poly operator+(const Poly &a,const Poly &b)
-{
-	Poly f=a,g=b;
-	int n=max(a.size(),b.size());
-	f.resize(n),g.resize(n);
-	Poly c(n);
-	for(int i=0;i<n;i++)
-		c[i]=(f[i]+g[i])%MOD;
-	return c;
-}
-Poly operator-(const Poly &a,const Poly &b)
-{
-	Poly f=a,g=b;
-	int n=max(a.size(),b.size());
-	f.resize(n),g.resize(n);
-	Poly c(n);
-	for(int i=0;i<n;i++)
-		c[i]=(f[i]-g[i]+MOD)%MOD;
-	return c;
-}
-Poly ntt(const Poly &F,const Poly &G,const function<Int(const Int &,const Int &)> &mul)
-{
-	int n=F.size()-1,m=G.size()-1;
-	vector<Int> f(n+1),g(m+1);
-	for(int i=0;i<=n;i++)
-		f[i]=F[i];
-	for(int i=0;i<=m;i++)
-		g[i]=G[i];
-	m+=n,n=1;
-	while(n<=m) n<<=1;
-	f.resize(n);
-	g.resize(n);
-	vector<int>rev(n);
-	for(int i=0;i<n;i++)
-	{
-		rev[i]=rev[i/2]>>1;
-		if(i&1) rev[i]|=n/2;
-	}
-	function<void(vector<Int> &)> dft=[=](vector<Int> &F)
-	{
-		int n=F.size();
-		vector<Int> f(n);
-		for(int i=0;i<n;i++)
-			f[i]=F[rev[i]];
-		for(int len=2;len<=n;len<<=1)
-			for(int i=0;i<n;i+=len)
-				for(int k=i;k<i+len/2;k++)
-				{
-					Int l=f[k];
-					Int r=W[0][len+k-i]*f[k+len/2];
-					f[k]=l+r;
-					f[k+len/2]=l-r;
-				}
-		for(int i=0;i<n;i++)
-			F[i]=f[i];
-		return;
-	};
-	dft(f);
-	dft(g);
-	for(int i=0;i<n;i++)
-		f[i]=mul(f[i],g[i]);
-	function<void(vector<Int> &)> idft=[=](vector<Int> &F)
-	{
-		int n=F.size();
-		vector<Int> f(n);
-		for(int i=0;i<n;i++)
-			f[i]=F[rev[i]];
-		for(int len=2;len<=n;len<<=1)
-			for(int i=0;i<n;i+=len)
-				for(int k=i;k<i+len/2;k++)
-				{
-					Int l=f[k];
-					Int r=W[1][len+k-i]*f[k+len/2];
-					f[k]=l+r;
-					f[k+len/2]=l-r;
-				}
-		Int invn=getinv((Int){n,n,n});
-		for(int i=0;i<n;i++)
-			F[i]=f[i]*invn;
-		return;
-	};
-	idft(f);
-	Poly res(m+1);
-	for(int i=0;i<=m;i++)
-		res[i]=f[i].to_int();
-	return res;
-}
-Poly operator*(const Poly &F,const Poly &G)
-{
-	return ntt(F,G,[=](const Int &x,const Int &y){return x*y;});
-}
-Poly operator*(const Poly &F,const int &x)
-{
-	Poly f=F;
-	int n=f.size()-1;
-	for(int i=0;i<=n;i++)
-		f[i]=1LL*f[i]*x%MOD;
-	return f; 
-}
-Poly operator*(const int &x,const Poly &F)
-{
-	Poly f=F;
-	int n=f.size()-1;
-	for(int i=0;i<=n;i++)
-		f[i]=1LL*f[i]*x%MOD;
-	return f; 
-}
-Poly getinv(const Poly &F)
-{
-	Poly f=F;
-	int m=f.size()-1;
-	int n=1;
-	while(n<=m) n<<=1;
-	f.resize(n);
-	Poly g={getinv(f[0])};
-	for(int m=2;m<=n;m<<=1)
-	{
-		Poly t(f.begin(),f.begin()+m);
-		Poly yyx=g*g;
-		yyx.resize(m);
-		yyx=yyx*t;
-		yyx.resize(m);
-		g.resize(m);
-		for(int i=0;i<m;i++)
-			g[i]=(g[i]*2LL-yyx[i]+MOD)%MOD;
-	}
-	g.resize(m+1);
-	return g;
-}
-Poly operator/(const Poly &F,const Poly &G)
-{
-	Poly f=F,g=G;
-	int n=f.size()-1,m=g.size()-1;
-	if(n<m) return Poly(n-m+1);
-	reverse(f.begin(),f.end());
-	reverse(g.begin(),g.end());
-	f.resize(n-m+1);
-	g.resize(n-m+1);
-	Poly q=f*getinv(g);
-	q.resize(n-m+1);
-	reverse(q.begin(),q.end());
-	return q;
-}
-Poly operator%(const Poly &F,const Poly &G)
-{
-	Poly f=F,g=G,q=f/g;
-	int m=g.size()-1;
-	g.resize(m);
-	q.resize(m);
-	Poly c=g*q;
-	c.resize(m);
-	f.resize(m);
-	return f-c;
-}
-Poly diff_calc(const Poly &F)
-{
-	Poly f=F;
-	int n=f.size()-1;
-	Poly g(n);
-	for(int i=1;i<=n;i++)
-		g[i-1]=1LL*f[i]*i%MOD;
-	return g;
-}
-Poly inte_calc(const Poly &G)
-{
-	Poly g=G;
-	int n=g.size()-1;
-	Poly f(n+2);
-	for(int i=1;i<=n+1;i++)
-		f[i]=1LL*g[i-1]*inv[i]%MOD;
-	return f;
-}
-Poly ln(const Poly &F)
-{
-	Poly f=F;
-	int n=f.size()-1;
-	Poly g=diff_calc(f)*getinv(f);
-	g.resize(n+1);
-	g=inte_calc(g);
-	g.resize(n+1);
-	return g;
-}
-int main()
-{
-	int n,m;
-	scanf("%d%d%d",&n,&m,&MOD);
-	init_omega();
-	init_inv();
-	Poly f(n+1),g(m+1);
-	for(int i=0;i<=n;i++)
-		scanf("%d",&f[i]);
-	for(int i=0;i<=m;i++)
-		scanf("%d",&g[i]);
-	Poly res=f*g;
-	for(int i=0;i<=n+m;i++)
-		printf("%d ",res[i]);
-	return 0;
-}
+```plain
+-std=c++20 -Wall -Wl,--stack=1234567890 -O2 -fsanitize=undefined -fsanitize-undefined-trap-on-error -D_GLIBCXX_DEBUG
 ```
 
 #### 计算几何
@@ -1552,7 +18,7 @@ int main()
 using namespace std;
 namespace Geometry
 {
-    const double eps=1e-10;
+    const double eps=1e-12;
     const double PI=acos(-1);
     const double INF=1e18;
     bool equal(double a,double b)
@@ -1569,11 +35,11 @@ namespace Geometry
     }
     bool less_equal(double a,double b)
     {
-        return less(a,b)||equal(a,b);
+        return b-a>-eps;
     }
     bool greater_equal(double a,double b)
     {
-        return greater(a,b)||equal(a,b);
+        return a-b>-eps;
     }
     class Point
     {
@@ -1622,6 +88,10 @@ namespace Geometry
         friend bool operator == (const Point &a,const Point &b)
         {
             return equal(a.x,b.x)&&equal(a.y,b.y);
+        }
+        friend bool operator != (const Point &a,const Point &b)
+        {
+            return (!equal(a.x,b.x))||(!equal(a.y,b.y));
         }
         friend bool operator < (const Point &a,const Point &b)
         {
@@ -1749,6 +219,19 @@ namespace Geometry
             Point u=projection(p);
             if(direction(u)==ON_SEGMENT) return Geometry::distance(u,p);
             else return min(Geometry::distance(a,p),Geometry::distance(b,p));
+        }
+        Point middle_point()const
+        {
+            return (a+b)/2;
+        }
+        Line perpendicular_bisector()const
+        {
+            Point p=middle_point();
+            return Line(p,p+(b-a).rotate(PI/2));
+        }
+        double length()const
+        {
+            return Geometry::distance(a,b);
         }
         friend istream &operator>>(istream &in,Line &obj)
         {
@@ -2166,11 +649,19 @@ namespace Geometry
             out<<obj.o<<" "<<obj.r;
             return out;
         }
+        friend bool operator==(const Circle &a,const Circle &b)
+        {
+            return a.o==b.o&&equal(a.r,b.r); 
+        }
+        friend bool operator!=(const Circle &a,const Circle &b)
+        {
+            return a.o!=b.o||(!equal(a.r,b.r)); 
+        }
         double area()const
         {
             return PI*r*r;
         }
-        bool tangent(const Line &l)const
+        bool is_tangent(const Line &l)const
         {
             return equal(Geometry::distance(l.projection(o),o),r);
         }
@@ -2207,13 +698,51 @@ namespace Geometry
             if(equal(d,r)) return {p};
             return cross_point(Circle(p,sqrt(d*d-r*r)));
         }
+        vector<Line>common_tangent_out(const Circle &c)const
+        {
+            assert(*this!=c);
+            if(equal(r,c.r))
+            {
+                Point p=(c.o-o).unit().rotate(PI/2)*r;
+                return {Line(o-p,c.o-p),Line(o+p,c.o+p)};
+            }
+            double d=distance(o,c.o);
+            if(less(d,abs(r-c.r))) return {};
+            if(equal(d,abs(r-c.r)))
+            {
+                Point p;
+                if(r>c.r) p=o+(c.o-o).unit()*r;
+                else p=c.o+(o-c.o).unit()*c.r;
+                return {Line(p,p)}; 
+            }
+            Point p((o.x*c.r-c.o.x*r)/(c.r-r),(o.y*c.r-c.o.y*r)/(c.r-r));
+            vector<Point>p1=tangent(p),p2=c.tangent(p);
+            assert((int)p1.size()==2&&(int)p2.size()==2);
+            return {Line(p1[0],p2[0]),Line(p1[1],p2[1])};
+        }
+        vector<Line>common_tangent_in(const Circle &c)const
+        {
+            assert(*this!=c);
+            double d=distance(o,c.o);
+            if(less(d,abs(r+c.r))) return {};
+            if(equal(d,abs(r+c.r)))
+            {
+                Point p=o+(c.o-o).unit()*r;
+                return {Line(p,p)}; 
+            }
+            Point p((o.x*c.r+c.o.x*r)/(r+c.r),(o.y*c.r+c.o.y*r)/(r+c.r));
+            vector<Point>p1=tangent(p),p2=c.tangent(p);
+            assert((int)p1.size()==2&&(int)p2.size()==2);
+            return {Line(p1[0],p2[0]),Line(p1[1],p2[1])};
+        }
         vector<Line>common_tangent(const Circle &c)const
         {
+            assert(*this!=c);
             vector<Line>f=common_tangent_out(c),g=common_tangent_in(c);
             for(const Line &l:g)
                 f.emplace_back(l);
             g.clear();
-            sort(f.begin(),f.end(),[](const Line &x,const Line &y){return x.a.x<y.a.x||(x.a.x==y.a.x&&x.a.y<y.a.y);});
+            sort(f.begin(),f.end(),[](const Line &x,const Line &y){return x.a.x<y.a.x||(x.a.x==x.a.x&&x.a.y<x.a.y);});
             return f;
         }
         double intersection_area(const Point &a,const Point &b)const
@@ -2244,36 +773,6 @@ namespace Geometry
             double alpha=acos((d*d+r*r-c.r*c.r)/(2*d*r))*2,beta=acos((d*d+c.r*c.r-r*r)/(2*d*c.r))*2;
             double s1=alpha*r*r/2,s2=beta*c.r*c.r/2,s3=sin(alpha)*r*r/2+sin(beta)*c.r*c.r/2;
             return s1+s2-s3;
-        }
-    private:
-        vector<Line>common_tangent_out(const Circle &c)const
-        {
-            if(equal(r,c.r))
-            {
-                Point p=(c.o-o).unit().rotate(PI/2)*r;
-                return {Line(o-p,c.o-p),Line(o+p,c.o+p)};
-            }
-            double d=distance(o,c.o);
-            if(less(d,abs(r-c.r))) return {};
-            Point p((o.x*c.r-c.o.x*r)/(c.r-r),(o.y*c.r-c.o.y*r)/(c.r-r));
-            vector<Point>p1=tangent(p),p2=c.tangent(p);
-            vector<Line>res;
-            for(const Point &u:p1)
-                for(const Point &v:p2)
-                    if(u==v||tangent(Line(u,v))) res.emplace_back(Line(u,v));
-            return res;
-        }
-        vector<Line>common_tangent_in(const Circle &c)const
-        {
-            double d=distance(o,c.o);
-            if(less_equal(d,abs(r-c.r))) return {};
-            Point p((o.x*c.r+c.o.x*r)/(r+c.r),(o.y*c.r+c.o.y*r)/(r+c.r));
-            vector<Point>p1=tangent(p),p2=c.tangent(p);
-            vector<Line>res;
-            for(const Point &u:p1)
-                for(const Point &v:p2)
-                    if(u==v||tangent(Line(u,v))) res.emplace_back(Line(u,v));
-            return res;
         }
     };
     const int SEPARATED=4,CIRCUMSCRIBED=3,INTERSECTED=2,INSCRIBED=1,INCLUDED=0;
@@ -2349,270 +848,903 @@ namespace Geometry
 using namespace Geometry;
 ```
 
-#### LCT
+---
+
+#### 网络流
+
 ```cpp
 #include<iostream>
 #include<cstdio>
+#include<cstring>
+#include<queue>
 using namespace std;
-const int N=100005;
-struct LCT
+struct Max_Flow
 {
-    struct Node
+    static const int N=105,M=5005;
+    static const long long INF=4557430888798830399;
+    struct Edge
     {
-        int fa,ls,rs;
-        int val,sum;
-        int rev;
-    }tree[N];
-    void push_up(int u)
+        int to,next;
+        long long flow;
+    }edge[M*2];
+    int cur[N],head[N],cnt;
+    int tot;
+    Max_Flow():cnt(1),tot(0)
     {
-        tree[u].sum=tree[tree[u].ls].sum^tree[tree[u].rs].sum^tree[u].val;
+        memset(head,0,sizeof(head));
+    }
+    void add_edge(int u,int v,long long f)
+    {
+        cnt++;
+        edge[cnt].to=v;
+        edge[cnt].flow=f;
+        edge[cnt].next=head[u];
+        head[u]=cnt;
         return;
     }
-    void reverse(int u)
+    void add(int u,int v,long long f)
     {
-        swap(tree[u].ls,tree[u].rs);
-        tree[u].rev^=1;
+        add_edge(u,v,f);
+        add_edge(v,u,0);
         return;
     }
-    void push_down(int u)
+    int dep[N];
+    bool bfs(int s,int t)
     {
-        if(!tree[u].rev) return;
-        if(tree[u].ls) reverse(tree[u].ls);
-        if(tree[u].rs) reverse(tree[u].rs);
-        tree[u].rev=0;
-        return;
-    }
-    int get(int u)
-    {
-        if(tree[tree[u].fa].ls==u) return 0;
-        if(tree[tree[u].fa].rs==u) return 1;
-        return -1;
-    }
-    bool isroot(int u)
-    {
-        return get(u)==-1;
-    }
-    void connect(int u,int v,int op)
-    {
-        if(u) tree[u].fa=v;
-        if(v)
+        for(int i=1;i<=tot;i++)
+            dep[i]=-1;
+        queue<int>q;
+        q.push(s);
+        dep[s]=0;
+        while(!q.empty())
         {
-            if(op==0) tree[v].ls=u;
-            if(op==1) tree[v].rs=u;
+            int u=q.front();
+            q.pop();
+            for(int i=head[u];i;i=edge[i].next)
+            {
+                int v=edge[i].to;
+                if(dep[v]!=-1||edge[i].flow<=0) continue;
+                dep[v]=dep[u]+1;
+                q.push(v);
+            }
         }
-        return;
+        return dep[t]!=-1;
     }
-    void rotate(int u)
+    long long dfs(int u,int t,long long flow)
     {
-        int f=tree[u].fa,gf=tree[f].fa,r=get(u),gr=get(f);
-        int v=0;
-        if(r==1) v=tree[u].ls;
-        if(r==0) v=tree[u].rs;
-        connect(u,gf,gr);
-        connect(v,f,r);
-        connect(f,u,r^1);
-        push_up(f);
-        push_up(u);
-        return;
-    }
-    void pushall(int u)
-    {
-        if(!isroot(u)) pushall(tree[u].fa);
-        push_down(u);
-        return;
-    }
-    void splay(int u)
-    {
-        pushall(u);
-        while(!isroot(u))
+        if(u==t||flow==0) return flow;
+        long long used=0;
+        for(int &i=cur[u];i;i=edge[i].next)
         {
-            int f=tree[u].fa;
-            if(!isroot(f)) rotate(get(u)==get(f)?f:u);
-            rotate(u);
+            int v=edge[i].to;
+            if(dep[v]!=dep[u]+1||edge[i].flow<=0) continue;
+            long long now=dfs(v,t,min(flow,(long long)edge[i].flow));
+            flow-=now;
+            edge[i].flow-=now;
+            edge[i^1].flow+=now;
+            used+=now;
+            if(flow==0) break;
         }
-        return;
+        return used;
     }
-    int access(int u)
+    long long dinic(int s,int t)
     {
-        int v;
-        for(v=0;u;v=u,u=tree[u].fa)
+        long long res=0;
+        while(bfs(s,t))
         {
-            splay(u);
-            tree[u].rs=v;
-            push_up(u);
+            for(int i=1;i<=tot;i++)
+                cur[i]=head[i];
+            res+=dfs(s,t,INF);
         }
-        return v;
+        return res;
     }
-    void makeroot(int u)
+}max_flow;
+struct Min_Cost_Max_Flow
+{
+    static const int N=405,M=15005;
+    static const long long INF=4557430888798830399;
+    struct Edge
     {
-        access(u);
-        splay(u);
-        reverse(u);
+        int to,next;
+        int cost;
+        long long flow;
+    }edge[M*2];
+    int cur[N],head[N],cnt;
+    int tot;
+    Min_Cost_Max_Flow():cnt(1),tot(0)
+    {
+        memset(head,0,sizeof(head));
+    }
+    void add_edge(int u,int v,int c,long long f)
+    {
+        cnt++;
+        edge[cnt].to=v;
+        edge[cnt].cost=c;
+        edge[cnt].flow=f;
+        edge[cnt].next=head[u];
+        head[u]=cnt;
         return;
     }
-    int findroot(int u)
+    void add(int u,int v,int c,long long f)
     {
-        access(u);
-        splay(u);
-        push_down(u);
-        while(tree[u].ls) u=tree[u].ls,push_down(u);
-        splay(u);
-        return u;
-    }
-    void split(int x,int y)
-    {
-        makeroot(x);
-        access(y);
-        splay(y);
+        add_edge(u,v,c,f);
+        add_edge(v,u,-c,0);
         return;
     }
-    bool link(int x,int y)
+    long long dis[N];
+    bool spfa(int s,int t)
     {
-        makeroot(x);
-        if(findroot(y)==x) return false;
-        tree[x].fa=y;
-        return true;
+        static bool vis[N];
+        for(int i=1;i<=tot;i++)
+            vis[i]=false;
+        for(int i=1;i<=tot;i++)
+            dis[i]=INF;
+        queue<int>q;
+        vis[s]=true;
+        dis[s]=0;
+        q.push(s);
+        while(!q.empty())
+        {
+            int u=q.front();
+            q.pop();
+            vis[u]=false;
+            for(int i=head[u];i;i=edge[i].next)
+            {
+                int v=edge[i].to;
+                if(edge[i].flow<=0) continue;
+                if(dis[v]>dis[u]+edge[i].cost)
+                {
+                    dis[v]=dis[u]+edge[i].cost;
+                    if(!vis[v])
+                    {
+                        vis[v]=true;
+                        q.push(v);
+                    }
+                }
+            }
+        }
+        return dis[t]!=INF;
     }
-    bool cut(int x,int y)
+    bool book[N];
+    pair<long long,long long> dfs(int u,int t,long long flow)
     {
-        if(findroot(x)!=findroot(y)) return false;
-        split(x,y);
-        if(tree[x].fa!=y||tree[x].rs) return false;
-        tree[x].fa=tree[y].ls=0;
-        push_up(y);
-        return true;
+        if(u==t||flow==0) return make_pair(flow,0);
+        book[u]=true;
+        long long used=0,res=0;
+        for(int &i=cur[u];i;i=edge[i].next)
+        {
+            int v=edge[i].to;
+            if(book[v]||dis[v]!=dis[u]+edge[i].cost||edge[i].flow<=0) continue;
+            pair<long long,long long>val=dfs(v,t,min(flow,edge[i].flow));
+            long long now=val.first;
+            res+=val.second+now*edge[i].cost;
+            flow-=now;
+            edge[i].flow-=now;
+            edge[i^1].flow+=now;
+            used+=now;
+            if(flow==0) break;
+        }
+        book[u]=false;
+        return make_pair(used,res);
     }
-    int query(int x,int y)
+    pair<long long,long long> ssp(int s,int t)
     {
-        split(x,y);
-        return tree[y].sum; 
+        long long ans=0,cost=0;
+        for(int i=1;i<=tot;i++)
+            book[i]=false;
+        while(spfa(s,t))
+        {
+            for(int i=1;i<=tot;i++)
+                cur[i]=head[i];
+            pair<long long,long long> res=dfs(s,t,INF);
+            ans+=res.first,cost+=res.second;
+        }
+        return make_pair(ans,cost);
     }
-    void modify(int u,int v)
+}min_cost_max_flow;
+struct Min_Cost_Feasible_Flow
+{
+    static const int N=405,M=15005;
+    static const long long INF=4557430888798830399;
+    struct Edge
     {
-        splay(u);
-        tree[u].val=v;
+        int to,next;
+        int cost;
+        long long flow;
+    }edge[M*2];
+    int cur[N],head[N],cnt;
+    int tot;
+    Min_Cost_Feasible_Flow():cnt(1),tot(0)
+    {
+        memset(head,0,sizeof(head));
+    }
+    void add_edge(int u,int v,int c,long long f)
+    {
+        cnt++;
+        edge[cnt].to=v;
+        edge[cnt].cost=c;
+        edge[cnt].flow=f;
+        edge[cnt].next=head[u];
+        head[u]=cnt;
         return;
     }
-}T;
-int n,m;
-int a[N];
+    void add(int u,int v,int c,long long f)
+    {
+        add_edge(u,v,c,f);
+        add_edge(v,u,-c,0);
+        return;
+    }
+    long long dis[N];
+    bool vis[N];
+    bool spfa(int s,int t)
+    {
+        for(int i=1;i<=tot;i++)
+            vis[i]=false;
+        for(int i=1;i<=tot;i++)
+            dis[i]=INF;
+        queue<int>q;
+        vis[s]=true;
+        dis[s]=0;
+        q.push(s);
+        while(!q.empty())
+        {
+            int u=q.front();
+            q.pop();
+            vis[u]=false;
+            for(int i=head[u];i;i=edge[i].next)
+            {
+                int v=edge[i].to;
+                if(edge[i].flow<=0) continue;
+                if(dis[v]>dis[u]+edge[i].cost)
+                {
+                    dis[v]=dis[u]+edge[i].cost;
+                    if(!vis[v])
+                    {
+                        vis[v]=true;
+                        q.push(v);
+                    }
+                }
+            }
+        }
+        return dis[t]!=INF;
+    }
+    bool book[N];
+    pair<long long,long long> dfs(int u,int t,long long flow)
+    {
+        if(u==t||flow==0) return make_pair(flow,0);
+        book[u]=true;
+        long long used=0,res=0;
+        for(int &i=cur[u];i;i=edge[i].next)
+        {
+            int v=edge[i].to;
+            if(book[v]||dis[v]!=dis[u]+edge[i].cost||edge[i].flow<=0) continue;
+            pair<long long,long long>val=dfs(v,t,min(flow,edge[i].flow));
+            long long now=val.first;
+            res+=val.second+now*edge[i].cost;
+            flow-=now;
+            edge[i].flow-=now;
+            edge[i^1].flow+=now;
+            used+=now;
+            if(flow==0) break;
+        }
+        book[u]=false;
+        return make_pair(used,res);
+    }
+    pair<long long,long long> ssp(int s,int t)
+    {
+        long long ans=0,cost=0;
+        for(int i=1;i<=tot;i++)
+            book[i]=false;
+        while(spfa(s,t))
+        {
+            for(int i=1;i<=tot;i++)
+                cur[i]=head[i];
+            pair<long long,long long> res=dfs(s,t,INF);
+            if(cost<0) break;
+            ans+=res.first,cost+=res.second;
+        }
+        return make_pair(ans,cost);
+    }
+}min_cost_feasible_flow;
+struct Bounded_Feasible_Flow_Without_Source_Sink
+{
+    static const int N=205,M=10205;
+    static const long long INF=4557430888798830399;
+    struct Edge
+    {
+        int to,next;
+        long long flow;
+    }edge[M*2+N*2];
+    int cur[N],head[N],cnt;
+    long long extra[N];
+    vector<long long>flow;
+    int tot;
+    Bounded_Feasible_Flow_Without_Source_Sink():cnt(1),tot(0)
+    {
+        memset(head,0,sizeof(head));
+        memset(extra,0,sizeof(extra));
+    }
+    void add_edge(int u,int v,long long f)
+    {
+        cnt++;
+        edge[cnt].to=v;
+        edge[cnt].flow=f;
+        edge[cnt].next=head[u];
+        head[u]=cnt;
+        return;
+    }
+    void add(int u,int v,long long f)
+    {
+        add_edge(u,v,f);
+        add_edge(v,u,0);
+        return;
+    }
+    void add(int u,int v,long long lower,long long upper)
+    {
+        add(u,v,upper-lower);
+        extra[v]+=lower,extra[u]-=lower;
+        flow.emplace_back(lower);
+        return;
+    }
+    int dep[N];
+    bool bfs(int s,int t)
+    {
+        for(int i=1;i<=tot;i++)
+            dep[i]=-1;
+        queue<int>q;
+        q.push(s);
+        dep[s]=0;
+        while(!q.empty())
+        {
+            int u=q.front();
+            q.pop();
+            for(int i=head[u];i;i=edge[i].next)
+            {
+                int v=edge[i].to;
+                if(dep[v]!=-1||edge[i].flow<=0) continue;
+                dep[v]=dep[u]+1;
+                q.push(v);
+            }
+        }
+        return dep[t]!=-1;
+    }
+    long long dfs(int u,int t,long long flow)
+    {
+        if(u==t||flow==0) return flow;
+        long long used=0;
+        for(int &i=cur[u];i;i=edge[i].next)
+        {
+            int v=edge[i].to;
+            if(dep[v]!=dep[u]+1||edge[i].flow<=0) continue;
+            long long now=dfs(v,t,min(flow,(long long)edge[i].flow));
+            flow-=now;
+            edge[i].flow-=now;
+            edge[i^1].flow+=now;
+            used+=now;
+            if(flow==0) break;
+        }
+        return used;
+    }
+    long long dinic(int s,int t)
+    {
+        long long res=0;
+        while(bfs(s,t))
+        {
+            for(int i=1;i<=tot;i++)
+                cur[i]=head[i];
+            res+=dfs(s,t,INF);
+        }
+        return res;
+    }
+    vector<long long> solve()
+    {
+        int s=++tot,t=++tot;
+        long long sum=0;
+        for(int i=1;i<=tot-2;i++)
+            if(extra[i]>0)
+            {
+                sum+=extra[i];
+                add(s,i,extra[i]);
+            }
+            else if(extra[i]<0)
+            {
+                add(i,t,-extra[i]);
+            }
+        if(dinic(s,t)!=sum) return {};
+        for(int i=0;i<(int)flow.size();i++)
+            flow[i]+=edge[i*2+3].flow;
+        return flow;
+    }
+}bounded_feasible_flow_without_source_sink;
+struct Bounded_Feasible_Flow_With_Source_Sink
+{
+    static const int N=205,M=10205;
+    static const long long INF=4557430888798830399;
+    struct Edge
+    {
+        int to,next;
+        long long flow;
+    }edge[M*2+N*2];
+    int cur[N],head[N],cnt;
+    long long extra[N];
+    vector<long long>flow;
+    int tot;
+    Bounded_Feasible_Flow_With_Source_Sink():cnt(1),tot(0)
+    {
+        memset(head,0,sizeof(head));
+        memset(extra,0,sizeof(extra));
+    }
+    void add_edge(int u,int v,long long f)
+    {
+        cnt++;
+        edge[cnt].to=v;
+        edge[cnt].flow=f;
+        edge[cnt].next=head[u];
+        head[u]=cnt;
+        return;
+    }
+    void add(int u,int v,long long f)
+    {
+        add_edge(u,v,f);
+        add_edge(v,u,0);
+        return;
+    }
+    void add(int u,int v,long long lower,long long upper)
+    {
+        add(u,v,upper-lower);
+        extra[v]+=lower,extra[u]-=lower;
+        flow.emplace_back(lower);
+        return;
+    }
+    int dep[N];
+    bool bfs(int s,int t)
+    {
+        for(int i=1;i<=tot;i++)
+            dep[i]=-1;
+        queue<int>q;
+        q.push(s);
+        dep[s]=0;
+        while(!q.empty())
+        {
+            int u=q.front();
+            q.pop();
+            for(int i=head[u];i;i=edge[i].next)
+            {
+                int v=edge[i].to;
+                if(dep[v]!=-1||edge[i].flow<=0) continue;
+                dep[v]=dep[u]+1;
+                q.push(v);
+            }
+        }
+        return dep[t]!=-1;
+    }
+    long long dfs(int u,int t,long long flow)
+    {
+        if(u==t||flow==0) return flow;
+        long long used=0;
+        for(int &i=cur[u];i;i=edge[i].next)
+        {
+            int v=edge[i].to;
+            if(dep[v]!=dep[u]+1||edge[i].flow<=0) continue;
+            long long now=dfs(v,t,min(flow,(long long)edge[i].flow));
+            flow-=now;
+            edge[i].flow-=now;
+            edge[i^1].flow+=now;
+            used+=now;
+            if(flow==0) break;
+        }
+        return used;
+    }
+    long long dinic(int s,int t)
+    {
+        long long res=0;
+        while(bfs(s,t))
+        {
+            for(int i=1;i<=tot;i++)
+                cur[i]=head[i];
+            res+=dfs(s,t,INF);
+        }
+        return res;
+    }
+    vector<long long> solve(int S,int T)
+    {
+        int s=++tot,t=++tot;
+        long long sum=0;
+        for(int i=1;i<=tot-2;i++)
+            if(extra[i]>0)
+            {
+                sum+=extra[i];
+                add(s,i,extra[i]);
+            }
+            else if(extra[i]<0)
+            {
+                add(i,t,-extra[i]);
+            }
+        add(T,S,INF);
+        if(dinic(s,t)!=sum) return {};
+        for(int i=0;i<(int)flow.size();i++)
+            flow[i]+=edge[i*2+3].flow;
+        return flow;
+    }
+}bounded_feasible_flow_with_source_sink;
+struct Bounded_Max_Flow_With_Source_Sink
+{
+    static const int N=205,M=10005;
+    static const long long INF=4557430888798830399;
+    struct Edge
+    {
+        int to,next;
+        long long flow;
+    }edge[M*2+N*2];
+    int cur[N],head[N],cnt;
+    long long extra[N];
+    int tot;
+    Bounded_Max_Flow_With_Source_Sink():cnt(1),tot(0)
+    {
+        memset(head,0,sizeof(head));
+        memset(extra,0,sizeof(extra));
+    }
+    void add_edge(int u,int v,long long f)
+    {
+        cnt++;
+        edge[cnt].to=v;
+        edge[cnt].flow=f;
+        edge[cnt].next=head[u];
+        head[u]=cnt;
+        return;
+    }
+    void add(int u,int v,long long f)
+    {
+        add_edge(u,v,f);
+        add_edge(v,u,0);
+        return;
+    }
+    void add(int u,int v,long long lower,long long upper)
+    {
+        add(u,v,upper-lower);
+        extra[v]+=lower,extra[u]-=lower;
+        return;
+    }
+    int dep[N];
+    bool bfs(int s,int t)
+    {
+        for(int i=1;i<=tot;i++)
+            dep[i]=-1;
+        queue<int>q;
+        q.push(s);
+        dep[s]=0;
+        while(!q.empty())
+        {
+            int u=q.front();
+            q.pop();
+            for(int i=head[u];i;i=edge[i].next)
+            {
+                int v=edge[i].to;
+                if(dep[v]!=-1||edge[i].flow<=0) continue;
+                dep[v]=dep[u]+1;
+                q.push(v);
+            }
+        }
+        return dep[t]!=-1;
+    }
+    long long dfs(int u,int t,long long flow)
+    {
+        if(u==t||flow==0) return flow;
+        long long used=0;
+        for(int &i=cur[u];i;i=edge[i].next)
+        {
+            int v=edge[i].to;
+            if(dep[v]!=dep[u]+1||edge[i].flow<=0) continue;
+            long long now=dfs(v,t,min(flow,(long long)edge[i].flow));
+            flow-=now;
+            edge[i].flow-=now;
+            edge[i^1].flow+=now;
+            used+=now;
+            if(flow==0) break;
+        }
+        return used;
+    }
+    long long dinic(int s,int t)
+    {
+        long long res=0;
+        while(bfs(s,t))
+        {
+            for(int i=1;i<=tot;i++)
+                cur[i]=head[i];
+            res+=dfs(s,t,INF);
+        }
+        return res;
+    }
+    long long solve(int S,int T)
+    {
+        int s=++tot,t=++tot;
+        long long sum=0;
+        for(int i=1;i<=tot-2;i++)
+            if(extra[i]>0)
+            {
+                sum+=extra[i];
+                add(s,i,extra[i]);
+            }
+            else if(extra[i]<0)
+            {
+                add(i,t,-extra[i]);
+            }
+        add(T,S,INF);
+        if(dinic(s,t)!=sum) return -1;
+        return dinic(S,T);
+    }
+}bounded_max_flow_with_source_sink;
+struct Bounded_Min_Flow_With_Source_Sink
+{
+    static const int N=50010,M=125010;
+    static const long long INF=4557430888798830399;
+    struct Edge
+    {
+        int to,next;
+        long long flow;
+    }edge[M*2+N*2];
+    int cur[N],head[N],cnt;
+    long long extra[N];
+    int tot;
+    Bounded_Min_Flow_With_Source_Sink():cnt(1),tot(0)
+    {
+        memset(head,0,sizeof(head));
+        memset(extra,0,sizeof(extra));
+    }
+    void add_edge(int u,int v,long long f)
+    {
+        cnt++;
+        edge[cnt].to=v;
+        edge[cnt].flow=f;
+        edge[cnt].next=head[u];
+        head[u]=cnt;
+        return;
+    }
+    void add(int u,int v,long long f)
+    {
+        add_edge(u,v,f);
+        add_edge(v,u,0);
+        return;
+    }
+    void add(int u,int v,long long lower,long long upper)
+    {
+        add(u,v,upper-lower);
+        extra[v]+=lower,extra[u]-=lower;
+        return;
+    }
+    int dep[N];
+    bool bfs(int s,int t)
+    {
+        for(int i=1;i<=tot;i++)
+            dep[i]=-1;
+        queue<int>q;
+        q.push(s);
+        dep[s]=0;
+        while(!q.empty())
+        {
+            int u=q.front();
+            q.pop();
+            for(int i=head[u];i;i=edge[i].next)
+            {
+                int v=edge[i].to;
+                if(dep[v]!=-1||edge[i].flow<=0) continue;
+                dep[v]=dep[u]+1;
+                q.push(v);
+            }
+        }
+        return dep[t]!=-1;
+    }
+    long long dfs(int u,int t,long long flow)
+    {
+        if(u==t||flow==0) return flow;
+        long long used=0;
+        for(int &i=cur[u];i;i=edge[i].next)
+        {
+            int v=edge[i].to;
+            if(dep[v]!=dep[u]+1||edge[i].flow<=0) continue;
+            long long now=dfs(v,t,min(flow,(long long)edge[i].flow));
+            flow-=now;
+            edge[i].flow-=now;
+            edge[i^1].flow+=now;
+            used+=now;
+            if(flow==0) break;
+        }
+        return used;
+    }
+    long long dinic(int s,int t)
+    {
+        long long res=0;
+        while(bfs(s,t))
+        {
+            for(int i=1;i<=tot;i++)
+                cur[i]=head[i];
+            res+=dfs(s,t,INF);
+        }
+        return res;
+    }
+    long long solve(int S,int T)
+    {
+        int s=++tot,t=++tot;
+        long long sum=0;
+        for(int i=1;i<=tot-2;i++)
+            if(extra[i]>0)
+            {
+                sum+=extra[i];
+                add(s,i,extra[i]);
+            }
+            else if(extra[i]<0)
+            {
+                add(i,t,-extra[i]);
+            }
+        add(T,S,INF);
+        if(dinic(s,t)!=sum) return -1;
+        long long res=edge[cnt].flow;
+        edge[cnt].flow=edge[cnt^1].flow=0;
+        return res-dinic(T,S);
+    }
+}bounded_min_flow_with_source_sink;
+struct Bounded_Min_Cost_Feasible_Flow_With_Source_Sink
+{
+    static const int N=305,M=5305;
+    static const long long INF=4557430888798830399;
+    struct Edge
+    {
+        int to,next;
+        int cost;
+        long long flow;
+    }edge[M*2+N*2];
+    int cur[N],head[N],cnt;
+    long long extra[N];
+    int tot;
+    long long totalcost;
+    Bounded_Min_Cost_Feasible_Flow_With_Source_Sink():cnt(1),tot(0),totalcost(0)
+    {
+        memset(head,0,sizeof(head));
+        memset(extra,0,sizeof(extra));
+    }
+    void add_edge(int u,int v,int c,long long f)
+    {
+        cnt++;
+        edge[cnt].to=v;
+        edge[cnt].cost=c;
+        edge[cnt].flow=f;
+        edge[cnt].next=head[u];
+        head[u]=cnt;
+        return;
+    }
+    void add(int u,int v,int c,long long f)
+    {
+        add_edge(u,v,c,f);
+        add_edge(v,u,-c,0);
+        return;
+    }
+    void add(int u,int v,int c,long long lower,long long upper)
+    {
+        totalcost+=lower*c;
+        add(u,v,c,upper-lower);
+        extra[v]+=lower,extra[u]-=lower;
+        return;
+    }
+    long long dis[N];
+    bool vis[N];
+    bool spfa(int s,int t)
+    {
+        for(int i=1;i<=tot;i++)
+            vis[i]=false;
+        for(int i=1;i<=tot;i++)
+            dis[i]=INF;
+        queue<int>q;
+        vis[s]=true;
+        dis[s]=0;
+        q.push(s);
+        while(!q.empty())
+        {
+            int u=q.front();
+            q.pop();
+            vis[u]=false;
+            for(int i=head[u];i;i=edge[i].next)
+            {
+                int v=edge[i].to;
+                if(edge[i].flow<=0) continue;
+                if(dis[v]>dis[u]+edge[i].cost)
+                {
+                    dis[v]=dis[u]+edge[i].cost;
+                    if(!vis[v])
+                    {
+                        vis[v]=true;
+                        q.push(v);
+                    }
+                }
+            }
+        }
+        return dis[t]!=INF;
+    }
+    bool book[N];
+    pair<long long,long long> dfs(int u,int t,long long flow)
+    {
+        if(u==t||flow==0) return make_pair(flow,0);
+        book[u]=true;
+        long long used=0,res=0;
+        for(int &i=cur[u];i;i=edge[i].next)
+        {
+            int v=edge[i].to;
+            if(book[v]||dis[v]!=dis[u]+edge[i].cost||edge[i].flow<=0) continue;
+            pair<long long,long long>val=dfs(v,t,min(flow,edge[i].flow));
+            long long now=val.first;
+            res+=val.second+now*edge[i].cost;
+            flow-=now;
+            edge[i].flow-=now;
+            edge[i^1].flow+=now;
+            used+=now;
+            if(flow==0) break;
+        }
+        book[u]=false;
+        return make_pair(used,res);
+    }
+    pair<long long,long long> ssp(int s,int t)
+    {
+        long long ans=0,cost=0;
+        for(int i=1;i<=tot;i++)
+            book[i]=false;
+        while(spfa(s,t))
+        {
+            for(int i=1;i<=tot;i++)
+                cur[i]=head[i];
+            pair<long long,long long> res=dfs(s,t,INF);
+            ans+=res.first,cost+=res.second;
+        }
+        return make_pair(ans,cost);
+    }
+    pair<long long,long long> solve(int S,int T)
+    {
+        int s=++tot,t=++tot;
+        long long sum=0;
+        for(int i=1;i<=tot-2;i++)
+            if(extra[i]>0)
+            {
+                sum+=extra[i];
+                add(s,i,0,extra[i]);
+            }
+            else if(extra[i]<0)
+            {
+                add(i,t,0,-extra[i]);
+            }
+        add(T,S,0,INF);
+        pair<long long,long long>res=ssp(s,t);
+        if(res.first!=sum) return make_pair(-1,-1);
+        totalcost+=res.second;
+        return make_pair(res.first,totalcost);
+    }
+}bounded_min_cost_feasible_flow_with_source_sink;
+const long long INF=Bounded_Min_Cost_Feasible_Flow_With_Source_Sink::INF;
 int main()
 {
-    scanf("%d%d",&n,&m);
+    int n;
+    scanf("%d",&n);
+    bounded_min_cost_feasible_flow_with_source_sink.tot=n+1;
+    int t=n+1;
     for(int i=1;i<=n;i++)
-        scanf("%d",&a[i]);
-    for(int i=1;i<=n;i++)
-        T.tree[i].sum=T.tree[i].val=a[i];
-    for(int i=1;i<=m;i++)
     {
-        int op,x,y;
-        scanf("%d%d%d",&op,&x,&y);
-        if(op==0) printf("%d\n",T.query(x,y));
-        else if(op==1) T.link(x,y);
-        else if(op==2) T.cut(x,y);
-        else if(op==3) T.modify(x,y);
+        int k;
+        scanf("%d",&k);
+        for(int j=1;j<=k;j++)
+        {
+            int b,v;
+            scanf("%d%d",&b,&v);
+            bounded_min_cost_feasible_flow_with_source_sink.add(i,b,v,1,INF);
+        }
+        bounded_min_cost_feasible_flow_with_source_sink.add(i,t,0,0,INF);
     }
+    long long ans=bounded_min_cost_feasible_flow_with_source_sink.solve(1,t).second;
+    printf("%lld",ans);
     return 0;
 }
 ```
 
-#### 
+---
 
-```cpp
-#include<iostream>
-#include<cstdio>
-#include<vector>
-#include<random>
-#include<chrono>
-#include<algorithm>
-using namespace std;
-mt19937_64 rnd(chrono::steady_clock::now().time_since_epoch().count());
-long long qpow(long long a,long long b,long long p)
-{
-    long long res=1;
-    while(b)
-    {
-        if(b&1) res=(__int128)res*a%p;
-        a=(__int128)a*a%p,b>>=1;
-    }
-    return res;
-}
-long long gcd(long long a,long long b)
-{
-    return b==0?a:gcd(b,a%b);
-}
-bool miller_rabin(long long n)
-{
-    if(n==1) return false;
-    if(n%2==0) return n==2;
-    static const int prime[]={2,325,9375,28178,450775,9780504,1795265022};
-    long long u=n-1;
-    int t=0;
-    while(u%2==0) u/=2,t++;
-    for(int a:prime)
-    {
-        if(a%n==0) continue;
-        long long x=qpow(a,u,n);
-        if(x==1||x==n-1) continue;
-        for(int s=0;s<t;s++)
-        {
-            x=(__int128)x*x%n;
-            if(x==n-1) break;
-        }
-        if(x!=n-1) return false;
-    }
-    return true;
-}
-long long find_factor(long long n)
-{
-    long long s=0,t=0;
-    long long c=rnd()%(n-1)+1;
-    for(int goal=1;;goal*=2)
-    {
-        long long val=1;
-        for(int step=1;step<=goal;step++)
-        {
-            t=((__int128)t*t+c)%n;
-            val=(__int128)val*abs(t-s)%n;
-            if(step%127==0)
-            {
-                long long d=gcd(val,n);
-                if(d>1) return d;
-            }
-        }
-        long long d=gcd(val,n);
-        if(d>1) return d;
-        s=t;
-    }
-}
-vector<pair<long long,int>>pollard_rho(long long n)
-{
-    if(n==1) return {};
-    if(miller_rabin(n)) return {make_pair(n,1)};
-    long long p=n;
-    while(p>=n) p=find_factor(n);
-    int cnt=0;
-    while(n%p==0) n/=p,cnt++;
-    vector<pair<long long,int>>res1=pollard_rho(n),res2=pollard_rho(p);
-    for(auto &[x,i]:res2)
-        i*=cnt;
-    vector<pair<long long,int>>res;
-    int p1=0,p2=0;
-    while(p1<(int)res1.size()&&p2<(int)res2.size())
-    {
-        if(res1[p1].first<res2[p2].first) res.emplace_back(res1[p1]),p1++;
-        else if(res1[p1].first>res2[p2].first) res.emplace_back(res2[p2]),p2++;
-        else if(res1[p1].first==res2[p2].first) res.emplace_back(make_pair(res1[p1].first,res1[p1].second+res2[p2].second)),p1++,p2++;
-    }
-    while(p1<(int)res1.size())
-        res.emplace_back(res1[p1]),p1++;
-    while(p2<(int)res2.size())
-        res.emplace_back(res2[p2]),p2++;
-    return res;
-}
-```
+#### O(n)-O(1) LCA
 
-#### O(1) LCA
 ```cpp
 #include<iostream>
 #include<cstdio>
@@ -2644,6 +1776,17 @@ int lca(int u,int v)
     if(dfn[mn[u][d]]<dfn[mn[v-(1<<d)+1][d]]) return mn[u][d];
     else return mn[v-(1<<d)+1][d];
 }
+void init_lca(int n)
+{
+    lg2[0]=-1;
+    for(int i=1;i<=n;i++)
+        lg2[i]=lg2[i/2]+1;
+    for(int j=1;(1<<j)<=n;j++)
+        for(int i=1;i+(1<<j)-1<=n;i++)
+            if(dfn[mn[i][j-1]]<dfn[mn[i+(1<<(j-1))][j-1]]) mn[i][j]=mn[i][j-1];
+            else mn[i][j]=mn[i+(1<<(j-1))][j-1];
+    return;
+}
 int main()
 {
     scanf("%d%d%d",&n,&q,&s);
@@ -2655,13 +1798,7 @@ int main()
         G[y].emplace_back(x);
     }
     dfs(s,0);
-    lg2[0]=-1;
-    for(int i=1;i<=n;i++)
-        lg2[i]=lg2[i/2]+1;
-    for(int j=1;(1<<j)<=n;j++)
-        for(int i=1;i+(1<<j)-1<=n;i++)
-            if(dfn[mn[i][j-1]]<dfn[mn[i+(1<<(j-1))][j-1]]) mn[i][j]=mn[i][j-1];
-            else mn[i][j]=mn[i+(1<<(j-1))][j-1];
+    init_lca(n);
     while(q--)
     {
         int u,v;
@@ -2671,6 +1808,8 @@ int main()
     return 0;
 }
 ```
+
+----
 
 #### 虚树
 
