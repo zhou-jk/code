@@ -112,6 +112,7 @@
         "spanstream": "cpp",
         "stacktrace": "cpp",
         "syncstream": "cpp",
-        "math.h": "c"
+        "math.h": "c",
+        "stdio.h": "c"
     }
 }
