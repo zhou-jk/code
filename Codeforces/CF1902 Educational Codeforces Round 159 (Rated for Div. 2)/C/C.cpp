@@ -8,12 +8,12 @@ int n;
 long long a[N];
 void solve()
 {
-    scanf("%d",&n);
+    cin>>n;
     for(int i=1;i<=n;i++)
-        scanf("%lld",&a[i]);
+        cin>>a[i];
     if(n==1)
     {
-        printf("1\n");
+        cout<<1<<"\n";
         return;
     }
     sort(a+1,a+n+1);
@@ -31,13 +31,15 @@ void solve()
             break;
         }
     ans+=ret;
-    printf("%lld\n",ans);
+    cout<<ans<<"\n";
     return;
 }
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr),cout.tie(nullptr);
     int T;
-    scanf("%d",&T);
+    cin>>T;
     while(T--)
         solve();
     return 0;

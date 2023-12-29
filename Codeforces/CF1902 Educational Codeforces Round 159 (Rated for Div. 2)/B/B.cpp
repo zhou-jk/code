@@ -11,7 +11,7 @@ bool check(int x)
 }
 void solve()
 {
-    scanf("%d%lld%d%d",&n,&p,&l,&t);
+    cin>>n>>p>>l>>t;
     int l=1,r=n,ans=0;
     while(l<=r)
     {
@@ -19,13 +19,15 @@ void solve()
         if(check(mid)) ans=mid,l=mid+1;
         else r=mid-1;
     }
-    printf("%d\n",ans);
+    cout<<ans<<"\n";
     return;
 }
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr),cout.tie(nullptr);
     int T;
-    scanf("%d",&T);
+    cin>>T;
     while(T--)
         solve();
     return 0;

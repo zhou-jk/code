@@ -11,8 +11,13 @@ map<pair<int,int>,set<int>>pre,suf;
 int sufx[N],sufy[N];
 int main()
 {
-    scanf("%d%d",&n,&q);
-    scanf("%s",s+1);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr),cout.tie(nullptr);
+    cin>>n>>q;
+    string str;
+    cin>>str;
+    for(int i=1;i<=n;i++)
+        s[i]=str[i-1];
     pre[{0,0}].insert(0);
     for(int i=1;i<=n;i++)
     {
@@ -37,16 +42,16 @@ int main()
     while(q--)
     {
         int x,y,l,r;
-        scanf("%d%d%d%d",&x,&y,&l,&r);
-        if(pre.count({x,y})&&(*pre[{x,y}].begin()<l||*pre[{x,y}].rbegin()>r)) printf("YES\n");
+        cin>>x>>y>>l>>r;
+        if(pre.count({x,y})&&(*pre[{x,y}].begin()<l||*pre[{x,y}].rbegin()>r)) cout<<"YES\n";
         else if(suf.count({x-prex[l-1]+sufx[r+1],y-prey[l-1]+sufy[r+1]}))
         {
             auto &p=suf[{x-prex[l-1]+sufx[r+1],y-prey[l-1]+sufy[r+1]}];
             auto it=p.lower_bound(l);
-            if(it!=p.end()&&*it<=r) printf("YES\n");
-            else printf("NO\n");
+            if(it!=p.end()&&*it<=r) cout<<"YES\n";
+            else cout<<"NO\n";
         }
-        else printf("NO\n");
+        else cout<<"NO\n";
     }
     return 0;
 }

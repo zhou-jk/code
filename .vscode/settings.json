@@ -113,6 +113,10 @@
         "stacktrace": "cpp",
         "syncstream": "cpp",
         "math.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "stdlib.h": "c",
+        "stdbool.h": "c",
+        "sort.h": "c",
+        "time.h": "c"
     }
 }

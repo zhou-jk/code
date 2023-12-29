@@ -6,21 +6,26 @@ int n;
 char s[N];
 void solve()
 {
-    scanf("%d",&n);
-    scanf("%s",s+1);
+    cin>>n;
+    string str;
+    cin>>str;
+    for(int i=1;i<=n;i++)
+        s[i]=str[i-1];
     for(int i=1;i<=n;i++)
         if(s[i]!='1')
         {
-            printf("YES\n");
+            cout<<"YES\n";
             return;
         }
-    printf("NO\n");
+    cout<<"NO\n";
     return;
 }
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr),cout.tie(nullptr);
     int T;
-    scanf("%d",&T);
+    cin>>T;
     while(T--)
         solve();
     return 0;

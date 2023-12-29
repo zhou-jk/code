@@ -9,9 +9,9 @@
             "command": "g++",
             "args": [
                 "-g",
-                "${file}",
+                "'${file}'",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "'${fileDirname}\\${fileBasenameNoExtension}.exe'",
                 "-std=c++17",
                 "-O2",
                 "-Wall",
