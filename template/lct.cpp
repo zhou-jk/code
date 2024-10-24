@@ -1,7 +1,7 @@
 #include<iostream>
 #include<cstdio>
 using namespace std;
-const int N=100005;
+const int N=150005;
 struct LCT
 {
     struct Node
@@ -126,11 +126,13 @@ struct LCT
         split(x,y);
         if(tree[x].fa!=y||tree[x].rs) return false;
         tree[x].fa=tree[y].ls=0;
-        push_up(x);
+        push_up(y);
         return true;
     }
     int query(int x,int y)
     {
+        makeroot(x);
+        if(findroot(y)!=x) return -1;
         split(x,y);
         return tree[y].sum; 
     }
@@ -140,4 +142,26 @@ struct LCT
         tree[u].val=v;
         return;
     }
-};
+}T;
+int n,m;
+int a[N];
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr),cout.tie(nullptr);
+    cin>>n>>m;
+    for(int i=1;i<=n;i++)
+        cin>>a[i];
+    for(int i=1;i<=n;i++)
+        T.tree[i].sum=T.tree[i].val=a[i];
+    for(int i=1;i<=m;i++)
+    {
+        int op,x,y;
+        cin>>op>>x>>y;
+        if(op==0) cout<<T.query(x,y)<<"\n";
+        else if(op==1) T.link(x,y);
+        else if(op==2) T.cut(x,y);
+        else if(op==3) T.modify(x,y);
+    }
+    return 0;
+}

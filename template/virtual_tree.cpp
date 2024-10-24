@@ -32,7 +32,7 @@ int lca(int u,int v)
 vector<int>E[N];
 void build(vector<int>h)
 {
-    sort(h.begin(),h.end(),[=](const int &x,const int &y){return dfn[x]<dfn[y];});
+    sort(h.begin(),h.end(),[&](const int &x,const int &y){return dfn[x]<dfn[y];});
     static int s[N],top;
     top=0;
     s[++top]=1;

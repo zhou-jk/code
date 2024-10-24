@@ -861,26 +861,146 @@ struct Bounded_Min_Cost_Feasible_Flow_With_Source_Sink
         return make_pair(res.first,totalcost);
     }
 }bounded_min_cost_feasible_flow_with_source_sink;
-const long long INF=Bounded_Min_Cost_Feasible_Flow_With_Source_Sink::INF;
-int main()
+struct Bounded_Min_Cost_Max_Flow_With_Source_Sink
 {
-    int n;
-    scanf("%d",&n);
-    bounded_min_cost_feasible_flow_with_source_sink.tot=n+1;
-    int t=n+1;
-    for(int i=1;i<=n;i++)
+    static const int N=1005,M=5005;
+    static const long long INF=4557430888798830399;
+    struct Edge
     {
-        int k;
-        scanf("%d",&k);
-        for(int j=1;j<=k;j++)
-        {
-            int b,v;
-            scanf("%d%d",&b,&v);
-            bounded_min_cost_feasible_flow_with_source_sink.add(i,b,v,1,INF);
-        }
-        bounded_min_cost_feasible_flow_with_source_sink.add(i,t,0,0,INF);
+        int to,next;
+        long long cost,flow;
+    }edge[M*2+N*2];
+    int cur[N],head[N],cnt;
+    long long extra[N];
+    int tot;
+    long long totalcost;
+    Bounded_Min_Cost_Max_Flow_With_Source_Sink():cnt(1),tot(0)
+    {
+        memset(head,0,sizeof(head));
+        memset(extra,0,sizeof(extra));
     }
-    long long ans=bounded_min_cost_feasible_flow_with_source_sink.solve(1,t).second;
-    printf("%lld",ans);
-    return 0;
-}
+    void add_edge(int u,int v,long long c,long long f)
+    {
+        cnt++;
+        edge[cnt].to=v;
+        edge[cnt].flow=f;
+        edge[cnt].cost=c;
+        edge[cnt].next=head[u];
+        head[u]=cnt;
+        return;
+    }
+    void add(int u,int v,long long c,long long f)
+    {
+        add_edge(u,v,c,f);
+        add_edge(v,u,-c,0);
+        return;
+    }
+    void add(int u,int v,long long c,long long lower,long long upper)
+    {
+        if(c>=0)
+        {
+            totalcost+=lower*c;
+            add(u,v,c,upper-lower);
+            extra[v]+=lower,extra[u]-=lower;
+        }
+        else
+        {
+            totalcost+=upper*c;
+            add(v,u,-c,upper-lower);
+            extra[v]+=upper,extra[u]-=upper;
+        }
+        return;
+    }
+    long long dis[N];
+    bool spfa(int s,int t)
+    {
+        static bool vis[N];
+        for(int i=1;i<=tot;i++)
+            vis[i]=false;
+        for(int i=1;i<=tot;i++)
+            dis[i]=INF;
+        queue<int>q;
+        vis[s]=true;
+        dis[s]=0;
+        q.push(s);
+        while(!q.empty())
+        {
+            int u=q.front();
+            q.pop();
+            vis[u]=false;
+            for(int i=head[u];i;i=edge[i].next)
+            {
+                int v=edge[i].to;
+                if(edge[i].flow<=0) continue;
+                if(dis[v]>dis[u]+edge[i].cost)
+                {
+                    dis[v]=dis[u]+edge[i].cost;
+                    if(!vis[v])
+                    {
+                        vis[v]=true;
+                        q.push(v);
+                    }
+                }
+            }
+        }
+        return dis[t]!=INF;
+    }
+    bool book[N];
+    pair<long long,long long> dfs(int u,int t,long long flow)
+    {
+        if(u==t||flow==0) return make_pair(flow,0);
+        book[u]=true;
+        long long used=0,res=0;
+        for(int &i=cur[u];i;i=edge[i].next)
+        {
+            int v=edge[i].to;
+            if(book[v]||dis[v]!=dis[u]+edge[i].cost||edge[i].flow<=0) continue;
+            pair<long long,long long> val=dfs(v,t,min(flow,edge[i].flow));
+            long long now=val.first;
+            res+=val.second+now*edge[i].cost;
+            flow-=now;
+            edge[i].flow-=now;
+            edge[i^1].flow+=now;
+            used+=now;
+            if(flow==0) break;
+        }
+        book[u]=false;
+        return make_pair(used,res);
+    }
+    pair<long long,long long> ssp(int s,int t)
+    {
+        long long ans=0,cost=0;
+        for(int i=1;i<=tot;i++)
+            book[i]=false;
+        while(spfa(s,t))
+        {
+            for(int i=1;i<=tot;i++)
+                cur[i]=head[i];
+            pair<long long,long long> res=dfs(s,t,INF);
+            ans+=res.first,cost+=res.second;
+        }
+        return make_pair(ans,cost);
+    }
+    pair<long long,long long> solve(int S,int T)
+    {
+        int s=++tot,t=++tot;
+        long long sum=0;
+        for(int i=1;i<=tot-2;i++)
+            if(extra[i]>0)
+            {
+                sum+=extra[i];
+                add(s,i,0,extra[i]);
+            }
+            else if(extra[i]<0)
+            {
+                add(i,t,0,-extra[i]);
+            }
+        add(T,S,0,INF);
+        pair<long long,long long>res=ssp(s,t);
+        if(res.first!=sum) return {-1,-1};
+        totalcost+=res.second;
+        res=ssp(S,T);
+        totalcost+=res.second;
+        return make_pair(res.first,totalcost);
+    }
+}bounded_min_cost_max_flow_with_source_sink;

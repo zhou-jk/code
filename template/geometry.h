@@ -12,7 +12,7 @@ using namespace std;
 namespace Geometry
 {
     const double eps=1e-12;
-    const double PI=acos(-1);
+    const double PI=acosl(-1);
     const double INF=1e18;
     bool equal(double a,double b)
     {
@@ -112,7 +112,7 @@ namespace Geometry
         }
         double length()const
         {
-            return sqrt(x*x+y*y);
+            return sqrtl(x*x+y*y);
         }
         Point unit()const
         {
@@ -120,7 +120,7 @@ namespace Geometry
         }
         double angle()const
         {
-            return atan2(y,x);
+            return atan2l(y,x);
         }
         int quadrant()const
         {
@@ -132,11 +132,11 @@ namespace Geometry
         }
         friend double angle(const Point &a,const Point &b)
         {
-            return atan2(cross(a,b),dot(a,b));
+            return atan2l(cross(a,b),dot(a,b));
         }
         Point rotate(const double &theta)const
         {
-            return Point(x*cos(theta)-y*sin(theta),x*sin(theta)+y*cos(theta));
+            return Point(x*cosl(theta)-y*sinl(theta),x*sinl(theta)+y*cosl(theta));
         }
         friend istream &operator>>(istream &in,Point &obj)
         {
@@ -149,9 +149,15 @@ namespace Geometry
             return out;
         }
     };
+    bool cmp_polar_angle(const Point &a,const Point &b)
+    {
+        int x=a.quadrant(),y=b.quadrant();
+        if(x!=y) return x<y;
+        return cross(a,b)>0;
+    };
     double distance(const Point &a,const Point &b)
     {
-        return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
+        return sqrtl((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
     }
     enum Direction
     {
@@ -204,7 +210,7 @@ namespace Geometry
             double l1=dot(p-a,b-a);
             if(less(l1,0)) return ONLINE_BACK;
             double l2=dot(b-a,b-a);
-            if(l1>l2) return ONLINE_FRONT;
+            if(greater(l1,l2)) return ONLINE_FRONT;
             else return ON_SEGMENT;
         }
         double distance(const Point &p)const
@@ -252,14 +258,14 @@ namespace Geometry
         double t=cross(w,u)/cross(v,w);
         return {x.a+t*v};
     }
-    int sign(double x)
+    int sgn(double x)
     {
         return greater(x,0)-less(x,0);
     }
     bool intersection(const Line &x,const Line &y)
     {
         if(x.direction(y.a)==ON_SEGMENT||x.direction(y.b)==ON_SEGMENT||y.direction(x.a)==ON_SEGMENT||y.direction(x.b)==ON_SEGMENT) return true;
-        return sign(cross(x.b-x.a,y.a-x.a))*sign(cross(x.b-x.a,y.b-x.a))<0&&sign(cross(y.b-y.a,x.a-y.a))*sign(cross(y.b-y.a,x.b-y.a))<0;
+        return sgn(cross(x.b-x.a,y.a-x.a))*sgn(cross(x.b-x.a,y.b-x.a))<0&&sgn(cross(y.b-y.a,x.a-y.a))*sgn(cross(y.b-y.a,x.b-y.a))<0;
     }
     double distance(const Line &x,const Line &y)
     {
@@ -387,7 +393,7 @@ namespace Geometry
             int n=g.size();
             for(int i=0;i<n;i++)
                 if(Line(g[i],g[(i+1)%n]).direction(a)==ON_SEGMENT) return ON;
-            function<bool(const Line &)> check=[=](const Line &l)
+            function<bool(const Line &)> check=[&](const Line &l)
             {
                 for(int i=0;i<n;i++)
                     if(parallel(l,Line(g[i],g[(i+1)%n]))) return false;
@@ -407,8 +413,10 @@ namespace Geometry
         double convex_diamater()const
         {
             int n=g.size();
+            assert(n>=2);
+            if(n==2) return distance(g[0],g[1]);
             double ans=0;
-            for(int i=0,j=0;i<n;i++)
+            for(int i=0,j=2;i<n;i++)
             {
                 while(less(cross(g[i]-g[j],g[(i+1)%n]-g[j]),cross(g[i]-g[(j+1)%n],g[(i+1)%n]-g[(j+1)%n]))) j=(j+1)%n;
                 ans=max(ans,max(distance(g[j],g[i]),distance(g[j],g[(i+1)%n])));
@@ -443,80 +451,74 @@ namespace Geometry
         }
         Polygon kernel()const;
     };
-    Polygon convex_hull(const vector<Point> &_p)
+    Polygon convex_hull(const vector<Point> &p)
     {
-        vector<Point> p=_p;
         int n=p.size();
         if(n<=2)
         {
-            sort(p.begin(),p.end(),[](const Point &a,const Point &b){return a.y==b.y?a.x<b.x:a.y<b.y;});
             Polygon res;
-            for(const Point &q:p)
-                res.push_back(q);
+            for(int i=0;i<n;i++)
+                res.push_back(p[i]);
             return res;
         }
-        sort(p.begin(),p.end(),[](const Point &a,const Point &b){return a.x==b.x?a.y<b.y:a.x<b.x;});
+        vector<int>id(n);
+        iota(id.begin(),id.end(),0);
+        sort(id.begin(),id.end(),[&](const int &a,const int &b){return p[a].x==p[b].x?p[a].y<p[b].y:p[a].x<p[b].x;});
         vector<int>stk;
         int top=0;
         for(int i=0;i<n;i++)
         {
-            while(top>=2&&less_equal(cross(p[stk[top-1]]-p[stk[top-2]],p[i]-p[stk[top-1]]),0)) stk.pop_back(),top--;
-            stk.emplace_back(i),top++;
+            while(top>=2&&less_equal(cross(p[stk[top-1]]-p[stk[top-2]],p[id[i]]-p[stk[top-1]]),0)) stk.pop_back(),top--;
+            stk.emplace_back(id[i]),top++;
         }
         int tmp=top;
         for(int i=n-2;i>=0;i--)
         {
-            while(top>tmp&&less_equal(cross(p[stk[top-1]]-p[stk[top-2]],p[i]-p[stk[top-1]]),0)) stk.pop_back(),top--;
-            stk.emplace_back(i),top++;
+            while(top>tmp&&less_equal(cross(p[stk[top-1]]-p[stk[top-2]],p[id[i]]-p[stk[top-1]]),0)) stk.pop_back(),top--;
+            stk.emplace_back(id[i]),top++;
         }
         stk.pop_back(),top--;
-        vector<Point>hull;
+        vector<int> hull;
         for(int i=0;i<top;i++)
-            hull.emplace_back(p[stk[i]]);
-        int t=min_element(hull.begin(),hull.end(),[](const Point &a,const Point &b){return a.y==b.y?a.x<b.x:a.y<b.y;})-hull.begin();
+            hull.emplace_back(stk[i]);
         Polygon res;
-        for(int i=t;i<top;i++)
-            res.push_back(hull[i]);
-        for(int i=0;i<t;i++)
-            res.push_back(hull[i]);
+        for(int u:hull)
+            res.push_back(p[u]);
         return res;
     }
-    Polygon non_strictly_convex_hull(const vector<Point> &_p)
+    Polygon non_strictly_convex_hull(const vector<Point> &p)
     {
-        vector<Point> p=_p;
         int n=p.size();
         if(n<=2)
         {
-            sort(p.begin(),p.end(),[](const Point &a,const Point &b){return a.y==b.y?a.x<b.x:a.y<b.y;});
             Polygon res;
-            for(const Point &q:p)
-                res.push_back(q);
+            for(int i=0;i<n;i++)
+                res.push_back(p[i]);
             return res;
         }
-        sort(p.begin(),p.end(),[](const Point &a,const Point &b){return a.x==b.x?a.y<b.y:a.x<b.x;});
+        vector<int>id(n);
+        iota(id.begin(),id.end(),0);
+        sort(id.begin(),id.end(),[&](const int &a,const int &b){return p[a].x==p[b].x?p[a].y<p[b].y:p[a].x<p[b].x;});
         vector<int>stk;
         int top=0;
         for(int i=0;i<n;i++)
         {
-            while(top>=2&&less(cross(p[stk[top-1]]-p[stk[top-2]],p[i]-p[stk[top-1]]),0)) stk.pop_back(),top--;
-            stk.emplace_back(i),top++;
+            while(top>=2&&less(cross(p[stk[top-1]]-p[stk[top-2]],p[id[i]]-p[stk[top-1]]),0)) stk.pop_back(),top--;
+            stk.emplace_back(id[i]),top++;
         }
         int tmp=top;
         for(int i=n-2;i>=0;i--)
         {
-            while(top>tmp&&less(cross(p[stk[top-1]]-p[stk[top-2]],p[i]-p[stk[top-1]]),0)) stk.pop_back(),top--;
-            stk.emplace_back(i),top++;
+            while(top>tmp&&less(cross(p[stk[top-1]]-p[stk[top-2]],p[id[i]]-p[stk[top-1]]),0)) stk.pop_back(),top--;
+            stk.emplace_back(id[i]),top++;
         }
         stk.pop_back(),top--;
-        vector<Point>hull;
+        vector<int> hull;
         for(int i=0;i<top;i++)
-            hull.emplace_back(p[stk[i]]);
-        int t=min_element(hull.begin(),hull.end(),[](const Point &a,const Point &b){return a.y==b.y?a.x<b.x:a.y<b.y;})-hull.begin();
+            hull.emplace_back(stk[i]);
         Polygon res;
-        for(int i=t;i<top;i++)
-            res.push_back(hull[i]);
-        for(int i=0;i<t;i++)
-            res.push_back(hull[i]);
+        for(int u:hull)
+            res.push_back(p[u]);
         return res;
     }
     Polygon minkowski_sum(const vector<Point> &a,const vector<Point> &b)
@@ -670,7 +672,7 @@ namespace Geometry
             Point pr=l.projection(o),e=(l.b-l.a).unit();
             double d=distance(pr,o);
             if(greater(d,r)) return {};
-            double t=sqrt(r*r-distance(pr,o)*distance(pr,o));
+            double t=sqrtl(r*r-distance(pr,o)*distance(pr,o));
             if(equal(t,0)) return {pr};
             else return {pr-e*t,pr+e*t};
         }
@@ -678,7 +680,7 @@ namespace Geometry
         {
             double d=distance(o,c.o);
             if(less(d,abs(r-c.r))||greater(d,r+c.r)) return {};
-            double x=(r*r-c.r*c.r+d*d)/(d*2),h=sqrt(r*r-x*x);
+            double x=(r*r-c.r*c.r+d*d)/(d*2),h=sqrtl(r*r-x*x);
             Point p=o+(c.o-o).unit()*x;
             if(equal(d,abs(r-c.r))||equal(d,r+c.r)) return {p};
             Point v=(c.o-o).unit().rotate(PI/2)*h;
@@ -689,7 +691,7 @@ namespace Geometry
             double d=distance(o,p);
             if(greater(r,d)) return {};
             if(equal(d,r)) return {p};
-            return cross_point(Circle(p,sqrt(d*d-r*r)));
+            return cross_point(Circle(p,sqrtl(d*d-r*r)));
         }
         vector<Line>common_tangent_out(const Circle &c)const
         {
@@ -763,8 +765,8 @@ namespace Geometry
             if(greater(d,r+c.r)) return 0;
             if(less_equal(d,abs(r-c.r))) return min(area(),c.area());
             vector<Point>t=cross_point(c);
-            double alpha=acos((d*d+r*r-c.r*c.r)/(2*d*r))*2,beta=acos((d*d+c.r*c.r-r*r)/(2*d*c.r))*2;
-            double s1=alpha*r*r/2,s2=beta*c.r*c.r/2,s3=sin(alpha)*r*r/2+sin(beta)*c.r*c.r/2;
+            double alpha=acosl((d*d+r*r-c.r*c.r)/(2*d*r))*2,beta=acosl((d*d+c.r*c.r-r*r)/(2*d*c.r))*2;
+            double s1=alpha*r*r/2,s2=beta*c.r*c.r/2,s3=sinl(alpha)*r*r/2+sinl(beta)*c.r*c.r/2;
             return s1+s2-s3;
         }
     };

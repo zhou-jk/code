@@ -1,0 +1,572 @@
+\documentclass[12pt]{article}
+
+\usepackage{ctex}
+\usepackage{pdfpages}
+\usepackage{titlesec}
+\usepackage{fontspec}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subfigure}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+
+% 无页眉，左边文字右边页码
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt} 
+\fancyfoot[L]{程序设计实践报告}
+\fancyfoot[R]{\thepage}
+\fancyfoot[C]{}
+
+% 页面设置
+\geometry{a4paper,footskip=4cm}
+
+% 标题样式
+\titleformat{\title}
+{\centering\bfseries \zihao{4} \heiti}
+{\thesection}
+{1em}
+{}
+
+\titleformat{\section}
+{\centering \color{xblue} \bfseries \zihao{4} \heiti}
+{\thesection}
+{1em}
+{}
+
+\titleformat{\subsection}
+{\raggedright\bfseries \zihao{-4} \heiti}
+{\thesubsection}
+{1em}
+{}
+
+\titleformat{\subsubsection}
+{\raggedright\bfseries \zihao{-4} \heiti}
+{\thesubsubsection}
+{1em}
+{}
+
+% 奇妙的深蓝色
+\definecolor{xblue}{RGB}{0,0,148}
+
+% 中文样式
+\setCJKmainfont{SimSun}
+\newtheorem{remark}{Remark}
+
+\setmonofont{Consolas}
+
+\lstset{
+  columns=fixed,       
+  numbers=left,                                        % 在左侧显示行号
+  numberstyle=\tiny\color{gray},                       % 设定行号格式
+  frame=none,                                          % 不显示背景边框
+  backgroundcolor=\color[RGB]{245,245,244},            % 设定背景颜色
+  keywordstyle=\color[RGB]{40,40,255},                 % 设定关键字颜色
+  numberstyle=\footnotesize\color{darkgray},
+  breaklines=true,
+  tabsize=4,
+  commentstyle=\it\color[RGB]{0,96,96},                % 设置代码注释的格式
+  stringstyle=\rmfamily\slshape\color[RGB]{128,0,0},   % 设置字符串格式
+  showstringspaces=false,                              % 不显示字符串中的空格
+  language=c,                                          % 设置语言
+}
+
+% 正文开始
+\begin{document}
+
+\begin{titlepage}
+
+\newgeometry{top=2cm}
+
+\parbox[c]{0pt}{
+    \includegraphics[width=8cm]{hdu.png}
+}
+
+\setlength{\parindent}{0pt}
+\centering
+\vfill
+{\zihao{-0} \heiti \textcolor{xblue}{程序设计实践报告}\par}
+\vspace{10pt}
+{\zihao{-2} \heiti 基于 C 语言的稀疏矩阵快速运算\par}
+\vfill
+{\large \heiti 卓越学院\par
+计算机科学英才班\par
+周靖凯\par
+}
+\vfill
+\restoregeometry
+
+\end{titlepage}
+
+\renewcommand\contentsname{\textcolor{xblue}{目录}}
+    \tableofcontents
+\clearpage
+
+\setcounter{page}{1}
+
+\section{问题描述}
+
+稀疏矩阵（Sparse Matrix）是一种常见的数学结构，它在各个领域的计算和数据处理中发挥着重要作用。与传统的密集矩阵不同，稀疏矩阵具有大部分元素为零的特点，这意味着它们在内存和计算资源的利用上具有巨大的潜力。稀疏矩阵常出现在诸如图像处理、线性代数、有限元分析、自然语言处理和网络分析等应用中。
+
+本报告旨在介绍一种基于十字链表的稀疏矩阵实现方法，该方法允许创建、储存和执行稀疏矩阵的基本运算，包括加法、减法、乘法和转置等操作。我们将展示如何使用这种方法来处理稀疏矩阵，并提供示例代码和实验结果，以说明其实际应用和性能。
+
+稀疏矩阵的处理对于解决许多实际问题至关重要。通过减少不必要的计算和内存开销，稀疏矩阵的优化方法可以大幅提高计算效率，减少存储需求。本报告将深入探讨如何实现这些优化，并介绍如何应对可能出现的错误情况，以确保稳定的矩阵操作。
+
+在国家的科技创新和工程建设中，十字链表稀疏矩阵运算被广泛应用。例如，在计算机算法的优化中，十字链表稀疏矩阵运算可以用于提高计算机的运算速度和效率，从而更好地支持国家的科技创新和工程建设。此外，十字链表稀疏矩阵运算还可以用于数据挖掘、图像处理、人工智能等领域，为国家的发展做出了重要的贡献。
+
+\newpage
+
+\section{稀疏矩阵的表示}
+
+稀疏矩阵是一种特殊的矩阵，其特点是大部分元素为零。与密集矩阵不同，稀疏矩阵在实际应用中可以节省大量的内存空间和计算资源。为了高效地表示和处理稀疏矩阵，我们需要采用合适的数据结构和表示方法。
+
+在本实现中，我们使用了基于十字链表的数据结构来表示稀疏矩阵。这种数据结构以一种紧凑的方式存储非零元素，并使用链表来跟踪每行和每列的非零元素。以下是我们使用的关键数据结构：
+
+稀疏矩阵中的一个非零元素用一个 \verb|struct Position| 表示。它包括元素的行坐标、列坐标和值。
+
+稀疏矩阵中的每个非零元素都由一个 \verb|struct Node| 的节点表示。这个节点包括一个指向 \verb|struct Triple| 的指针，以及指向下一个节点和右边节点的指针。这种结构使得我们可以轻松地遍历矩阵的非零元素。
+
+每一行和每一列都由一个 \verb|struct Line| 结构来表示，其中包括指向头部和尾部节点的指针。这种结构使得我们可以快速访问每行和每列的非零元素。
+
+最终，整个稀疏矩阵由一个 \verb|struct Matrix| 结构表示，包括矩阵的行数、列数以及行和列的链表。这个结构将所有的行和列连接在一起，提供了对整个矩阵的全局访问。
+
+通过使用这种基于十字链表的表示方法，我们可以高效地存储和操作稀疏矩阵，减少内存开销并提高运算效率。在接下来的部分，我们将详细介绍如何使用这些数据结构来创建、操作和执行各种稀疏矩阵运算。
+
+\newpage
+
+\section{稀疏矩阵的基本操作}
+
+稀疏矩阵的基本操作包括加法、减法、乘法和转置等。在本节中，我们将详细讨论如何使用基于十字链表的数据结构执行这些操作。
+
+\subsection{加法}
+
+稀疏矩阵的加法操作是将两个稀疏矩阵相加，得到一个新的稀疏矩阵。我们首先检查两个矩阵的尺寸是否匹配，即它们的行数和列数是否相同。如果不匹配，则加法操作无法执行。
+
+然后，我们遍历两个矩阵的非零元素，将相同位置的元素相加，并将结果存储在新矩阵中。需要注意的是，如果两个元素相加后的结果为零，我们可以选择不将其存储，以节省内存空间。
+
+\subsection{减法}
+
+稀疏矩阵的减法操作类似于加法，不同之处在于我们需要计算一个矩阵减去另一个矩阵的结果。减法操作也需要检查尺寸匹配，并按照相同的方式遍历非零元素进行减法操作。
+
+\subsection{乘法}
+
+稀疏矩阵的乘法操作是其中最复杂的操作之一。乘法操作需要检查第一个矩阵的列数是否等于第二个矩阵的行数。然后，我们遍历两个矩阵的非零元素，并执行乘法运算，将结果存储在新矩阵中。
+
+\subsection*{转置}
+
+矩阵的转置操作将矩阵的行和列交换，得到一个新的矩阵。在稀疏矩阵中，这可以通过重新排列节点并更新链表的方式来实现。
+
+\newpage
+
+\section{性能分析}
+
+\subsection{时间复杂度}
+
+稀疏矩阵的基本操作的时间复杂度取决于非零元素的数量和矩阵的尺寸。以下是基本操作的时间复杂度分析：
+
+\begin{itemize}
+    \item 假设稀疏矩阵 $A$ 和 $B$ 的非零元素数量分别为 $c_1$ 和 $c_2$，那么加法操作的时间复杂度为 $O(c_1 + c_2$)。
+    \item 减法操作与加法操作具有相同的时间复杂度，也为 $O(c_1 + c_2)$。
+    \item 假设稀疏矩阵 $A$ 的非零元素数量为 $n_1$，$B$ 的非零元素数量为 $n_2$，$A$ 的列数为 $m_1$，$B$ 的行数为 $n_1$。乘法操作的最差时间复杂度为 $O(n_1 \cdot m_1\cdot n_2)$，但是稀疏矩阵的时间复杂度会大大降低。
+    \item 转置操作的时间复杂度取决于稀疏矩阵的非零元素数量 $c$ 和矩阵的尺寸 。时间复杂度为 $O(c)$。
+\end{itemize}
+
+\subsection{空间复杂度}
+
+令稀疏矩阵的行数为 $n$，列数为 $m$，非零元素的数量为 $c$。空间复杂度为 $O(n+m+c)$。
+
+\section{讨论与改进}
+
+\subsection{时间复杂度优化}
+
+\begin{itemize}
+\item 加法和减法：由于这两个操作的时间复杂度与非零元素的数量成正比，可以考虑使用多线程或并行计算来加速操作，特别是在处理大型稀疏矩阵时。并行计算可以有效地利用多核处理器的性能。
+\item 乘法：乘法操作的时间复杂度较高，因此可以考虑使用稀疏矩阵乘法的优化算法，如 Strassen 算法或分块矩阵乘法。这些算法可以减少计算量，降低时间复杂度。
+\end{itemize}
+
+\subsection{稀疏矩阵的预处理}
+
+在执行稀疏矩阵操作之前，可以考虑进行一些预处理操作，例如矩阵分解、缩放或填充零元素，以减小非零元素的数量或简化操作。这可以帮助加速后续的操作。
+
+\subsection{并行计算}
+
+对于大型稀疏矩阵，可以考虑使用分布式计算或 GPU 加速来处理操作。这将允许我们利用大规模计算集群或 GPU 的并行计算能力，以加速操作。
+
+\newpage
+
+\section{小结}
+
+稀疏矩阵是在各种科学和工程领域中广泛应用的数据结构，它们能够有效地存储和处理具有大量零元素的数据。在本文中，我们讨论了稀疏矩阵的表示和基本操作，并进行了性能分析。
+
+通过基于十字链表的数据结构，我们成功地实现了稀疏矩阵的创建、输入输出、加法、减法、乘法和转置等操作。这些操作为稀疏矩阵的处理提供了基础，使我们能够在不浪费大量内存的情况下高效地执行各种数学运算。
+
+在性能分析中，我们了解到稀疏矩阵的操作时间复杂度和空间复杂度的特点。我们提出了一些优化策略，包括多线程计算、稀疏矩阵乘法的优化算法、稀疏矩阵表示的改进方法以及预处理策略，以提高程序的性能。
+
+在实际应用中，根据具体问题的需求和数据的特性，我们可以选择适当的稀疏矩阵表示方法和优化策略，以实现高效的数据处理。稀疏矩阵的处理在图计算、线性代数、机器学习等领域都有广泛的应用，因此对其性能的优化具有重要的意义。
+
+\newpage
+
+% 附录
+\appendix
+
+\section{附录}
+
+\subsection{完整测试代码}
+
+\texttt{matrix.h}
+
+{
+\setmainfont{Consolas}
+  % 代码段             
+\begin{lstlisting}
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+struct Triple
+{
+    int x, y;
+    int val;
+};
+
+struct Node
+{
+    struct Triple position;
+    struct Node *down, *right;
+};
+
+struct Line
+{
+    struct Node *head, *tail;
+};
+
+struct Matrix
+{
+    int n, m;
+    struct Line *row, *column;
+};
+
+int cmp(const void *a, const void *b)
+{
+    if (((struct Triple *)a)->x != ((struct Triple *)b)->x)
+        return (((struct Triple *)a)->x - ((struct Triple *)b)->x);
+    else
+        return (((struct Triple *)a)->y - ((struct Triple *)b)->y);
+}
+
+struct Matrix init_zero_matrix(const int n, const int m)
+{
+    struct Matrix mat;
+    mat.n = n, mat.m = m;
+    mat.row = (struct Line *)malloc(sizeof(struct Line) * n);
+    mat.column = (struct Line *)malloc(sizeof(struct Line) * m);
+    for (int i = 0; i < n; i++)
+        mat.row[i].head = mat.row[i].tail = NULL;
+    for (int i = 0; i < m; i++)
+        mat.column[i].head = mat.column[i].tail = NULL;
+    return mat;
+}
+
+void destroy_matrix(struct Matrix *mat)
+{
+    for (int i = 0; i < mat->n; i++)
+        for (struct Node *p = mat->row[i].head, *np; p != NULL; p = np)
+        {
+            np = p->right;
+            free(p);
+        }
+    free(mat->row);
+    free(mat->column);
+    return;
+}
+
+struct Matrix create_matrix(const struct Triple a[], const int size, const int n, const int m)
+{
+    if (n <= 0 || m <= 0)
+    {
+        fprintf(stderr, "The number of rows and columns must be greater than 0");
+        exit(EXIT_FAILURE);
+    }
+    struct Triple *b = (struct Triple *)malloc(sizeof(struct Triple) * size);
+    for (int i = 0; i < size; i++)
+        b[i].x = a[i].x - 1, b[i].y = a[i].y - 1, b[i].val = a[i].val;
+    for (int i = 0; i < size; i++)
+    {
+        if (b[i].x < 0 || b[i].x >= n || b[i].y < 0 || b[i].y >= m)
+        {
+            fprintf(stderr, "Illegal element");
+            free(b);
+            exit(EXIT_FAILURE);
+        }
+        if (i > 1 && b[i].x == b[i - 1].x && b[i].y == b[i - 1].y)
+        {
+            fprintf(stderr, "Duplicate nodes");
+            free(b);
+            exit(EXIT_FAILURE);
+        }
+    }
+    qsort(b, size, sizeof(struct Triple), cmp);
+    struct Matrix mat = init_zero_matrix(n, m);
+    for (int i = 0; i < size; i++)
+    {
+        if (b[i].val == 0)
+            continue;
+        struct Node *p = (struct Node *)malloc(sizeof(struct Node));
+        p->position = b[i];
+        p->down = p->right = NULL;
+        if (mat.row[b[i].x].tail == NULL)
+            mat.row[b[i].x].head = mat.row[b[i].x].tail = p;
+        else
+            mat.row[b[i].x].tail->right = p;
+        mat.row[b[i].x].tail = p;
+        if (mat.column[b[i].y].tail == NULL)
+            mat.column[b[i].y].head = mat.column[b[i].y].tail = p;
+        else
+            mat.column[b[i].y].tail->down = p;
+        mat.column[b[i].y].tail = p;
+    }
+    free(b);
+    return mat;
+}
+
+void print_matrix(const struct Matrix mat)
+{
+    for (int i = 0; i < mat.n; i++)
+        for (struct Node *p = mat.row[i].head; p != NULL; p = p->right)
+            printf("(%d,%d,%d)\n", p->position.x + 1, p->position.y + 1, p->position.val);
+    return;
+}
+
+void print_complete_matrix(const struct Matrix mat)
+{
+    for (int i = 0; i < mat.n; i++)
+    {
+        if (mat.row[i].head == NULL)
+        {
+            for (int j = 0; j < mat.m; j++)
+            {
+                printf("0");
+                if (j + 1 < mat.m)
+                    printf(" ");
+                else
+                    printf("\n");
+            }
+        }
+        else
+        {
+            if (0 < mat.row[i].head->position.y)
+            {
+                for (int j = 0; j <= mat.row[i].head->position.y - 1; j++)
+                    printf("0 ");
+            }
+            for (struct Node *p = mat.row[i].head; p != NULL; p = p->right)
+            {
+                struct Node *np = p->right;
+                printf("%d", p->position.val);
+                if (p->position.y == mat.m - 1)
+                    printf("\n");
+                else
+                    printf(" ");
+                if (np != NULL)
+                {
+                    for (int j = p->position.y + 1; j <= np->position.y - 1; j++)
+                        printf("0 ");
+                }
+                else
+                {
+                    for (int j = p->position.y + 1; j < mat.m; j++)
+                    {
+                        printf("0");
+                        if (j + 1 < mat.m)
+                            printf(" ");
+                        else
+                            printf("\n");
+                    }
+                }
+            }
+        }
+    }
+    return;
+}
+
+struct Matrix add(const struct Matrix a, const struct Matrix b)
+{
+    if (a.n != b.n || a.m != b.m)
+    {
+        fprintf(stderr, "The two matrices being added must have the same number of rows and columns");
+        exit(EXIT_FAILURE);
+    }
+    struct Matrix c = init_zero_matrix(a.n, a.m);
+    for (int i = 0; i < a.n; i++)
+    {
+        struct Node *l = a.row[i].head, *r = b.row[i].head;
+        while (l != NULL || r != NULL)
+        {
+            struct Node *p = (struct Node *)malloc(sizeof(struct Node));
+            p->down = p->right = NULL;
+            if (r == NULL || l->position.y < r->position.y)
+                p->position.x = l->position.x, p->position.y = l->position.y, p->position.val = l->position.val, l = l->right;
+            else if (l == NULL || l->position.y > r->position.y)
+                p->position.x = r->position.x, p->position.y = r->position.y, p->position.val = r->position.val, r = r->right;
+            else
+                p->position.x = l->position.x, p->position.y = r->position.y, p->position.val = l->position.val + r->position.val, l = l->right, r = r->right;
+            if (p->position.val == 0)
+            {
+                free(p);
+                continue;
+            }
+            if (c.row[p->position.x].tail == NULL)
+                c.row[p->position.x].head = c.row[p->position.x].tail = p;
+            else
+                c.row[p->position.x].tail->right = p;
+            c.row[p->position.x].tail = p;
+            if (c.column[p->position.y].tail == NULL)
+                c.column[p->position.y].head = c.column[p->position.y].tail = p;
+            else
+                c.column[p->position.y].tail->down = p;
+            c.column[p->position.y].tail = p;
+        }
+    }
+    return c;
+}
+
+struct Matrix minus(const struct Matrix a, const struct Matrix b)
+{
+    if (a.n != b.n || a.m != b.m)
+    {
+        fprintf(stderr, "The two matrices being minused must have the same number of rows and columns");
+        exit(EXIT_FAILURE);
+    }
+    struct Matrix c = init_zero_matrix(a.n, a.m);
+    for (int i = 0; i < a.n; i++)
+    {
+        struct Node *l = a.row[i].head, *r = b.row[i].head;
+        while (l != NULL || r != NULL)
+        {
+            struct Node *p = (struct Node *)malloc(sizeof(struct Node));
+            p->down = p->right = NULL;
+            if (r == NULL || l->position.y < r->position.y)
+                p->position.x = l->position.x, p->position.y = l->position.y, p->position.val = l->position.val, l = l->right;
+            else if (l == NULL || l->position.y > r->position.y)
+                p->position.x = r->position.x, p->position.y = r->position.y, p->position.val = -r->position.val, r = r->right;
+            else
+                p->position.x = l->position.x, p->position.y = r->position.y, p->position.val = l->position.val - r->position.val, l = l->right, r = r->right;
+            if (p->position.val == 0)
+            {
+                free(p);
+                continue;
+            }
+            if (c.row[p->position.x].tail == NULL)
+                c.row[p->position.x].head = c.row[p->position.x].tail = p;
+            else
+                c.row[p->position.x].tail->right = p;
+            c.row[p->position.x].tail = p;
+            if (c.column[p->position.y].tail == NULL)
+                c.column[p->position.y].head = c.column[p->position.y].tail = p;
+            else
+                c.column[p->position.y].tail->down = p;
+            c.column[p->position.y].tail = p;
+        }
+    }
+    return c;
+}
+
+struct Matrix multiply(const struct Matrix a, const struct Matrix b)
+{
+    if (a.m != b.n)
+    {
+        fprintf(stderr, "The number of columns in the first matrix is not equal to the number of rows in the second matrix");
+        exit(EXIT_FAILURE);
+    }
+    struct Matrix c = init_zero_matrix(a.n, b.m);
+    for (int i = 0; i < a.n; i++)
+        for (struct Node *pa = a.row[i].head; pa != NULL; pa = pa->right)
+        {
+            int k = pa->position.y;
+            for (struct Node *pb = b.row[k].head; pb != NULL; pb = pb->right)
+            {
+                int j = pb->position.y;
+                if (c.column[j].tail != NULL && c.column[j].tail->position.x == i)
+                    c.column[j].tail->position.val += pa->position.val * pb->position.val;
+                else
+                {
+                    struct Node *pc = (struct Node *)malloc(sizeof(struct Node));
+                    pc->down = pc->right = NULL;
+                    pc->position.x = i, pc->position.y = j, pc->position.val = pa->position.val * pb->position.val;
+                    if (pc->position.val == 0)
+                    {
+                        free(pc);
+                        continue;
+                    }
+                    if (c.column[pc->position.y].tail == NULL)
+                        c.column[pc->position.y].head = c.column[pc->position.y].tail = pc;
+                    else
+                        c.column[pc->position.y].tail->down = pc;
+                    c.column[pc->position.y].tail = pc;
+                }
+            }
+        }
+    for (int j = 0; j < b.m; j++)
+    {
+        while (c.column[j].head != NULL && c.column[j].head->position.val == 0)
+        {
+            struct Node *np = c.column[j].head->down;
+            free(c.column[j].head);
+            c.column[j].head = np;
+        }
+        for (struct Node *p = c.column[j].head; p != NULL; p = p->down)
+        {
+            for (struct Node *np = p->down; np != NULL && np->position.val == 0; np = p->down)
+            {
+                p->down = np->down;
+                free(np);
+            }
+        }
+        for (struct Node *p = c.column[j].head; p != NULL; p = p->down)
+        {
+            if (c.row[p->position.x].tail == NULL)
+                c.row[p->position.x].head = c.row[p->position.x].tail = p;
+            else
+                c.row[p->position.x].tail->right = p;
+            c.row[p->position.x].tail = p;
+        }
+    }
+    return c;
+}
+
+struct Matrix transpose(const struct Matrix a)
+{
+    struct Matrix t = init_zero_matrix(a.m, a.n);
+    for (int i = 0; i < a.n; i++)
+        for (struct Node *p = a.row[i].head; p != NULL; p = p->right)
+        {
+            struct Node *q = (struct Node *)malloc(sizeof(struct Node));
+            q->down = q->right = NULL;
+            q->position.x = p->position.y, q->position.y = p->position.x, q->position.val = p->position.val;
+            if (t.row[q->position.x].tail == NULL)
+                t.row[q->position.x].head = t.row[q->position.x].tail = q;
+            else
+                t.row[q->position.x].tail->right = q;
+            t.row[q->position.x].tail = q;
+            if (t.column[q->position.y].tail == NULL)
+                t.column[q->position.y].head = t.column[q->position.y].tail = q;
+            else
+                t.column[q->position.y].tail->down = q;
+            t.column[q->position.y].tail = q;
+        }
+    return t;
+}
+\end{lstlisting}
+}
+
+
+
+
+\end{document}

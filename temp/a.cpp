@@ -1,74 +1,110 @@
-#include<iostream>
-#include<cstdio>
-#include<vector>
-#include<numeric>
-#include<algorithm>
+#include<bits/stdc++.h>
 using namespace std;
-const int N=100005;
-int n,k;
-int a[N];
-void solve()
+constexpr int N=300005;
+struct Node
 {
-    cin>>n>>k;
-    for(int i=1;i<=n;i++)
-        cin>>a[i];
-    bool allone=true;
-    for(int i=1;i<=n;i++)
-        if(a[i]!=1)
-        {
-            allone=false;
-            break;
-        }
-    if(allone)
+    int op,val,x,y,id;
+}a[N];
+struct Bianry_Array
+{
+    int c[N];
+    int lowbit(int x)
     {
-        cout<<max(n-k,0)<<"\n";
+        return x&-x;
+    }
+    void add(int x,int y)
+    {
+        for(int i=x;i<N;i+=lowbit(i))
+            c[i]+=y;
         return;
     }
-    vector<int>len;
-    int c1=0,c2=0;
-    for(int i=1,j=1;i<=n;i=j)
+    int query(int x)
     {
-        while(j<=n&&(a[i]==1)==(a[j]==1)) j++;
-        if(a[i]==1)
-        {
-            if(j==n+1) c1+=j-i;
-            else if(i==1) c1+=j-i;
-            else len.emplace_back(j-i);
-        }
+        x=min(x,N-1);
+        int res=0;
+        for(int i=x;i>0;i-=lowbit(i))
+            res+=c[i];
+        return res;
+    }
+} BA;
+int ans[N];
+void cdq(int l,int r)
+{
+    if(l==r) return;
+    int mid=(l+r)>>1;
+    cdq(l,mid);
+    cdq(mid+1,r);
+    vector<Node>b;
+    for(int i=l;i<=mid;i++)
+        if(a[i].op) b.emplace_back(a[i]);
+    for(int i=mid+1;i<=r;i++)
+        if(!a[i].op) b.emplace_back(a[i]);
+    sort(b.begin(),b.end(),[&](const Node &a,const Node &b){return a.x<b.x||(a.x==b.x&&abs(a.op)>abs(b.op));});
+    for(int i=0;i<(int)b.size();i++)
+        if(b[i].op) BA.add(b[i].y, b[i].op);
         else
         {
-            int lst=i;
-            for(int k=i;k<j;k++)
-            {
-                if(k==j-1||gcd(a[k],a[k+1])!=1)
-                {
-                    int cnt=(k-lst+1-1)/2;
-                    c2+=cnt;
-                    if((k-lst+1)%2==0) c1++; 
-                    lst=k+1;
-                }
-            }
+            if(b[i].id>0) ans[b[i].id]+=BA.query(b[i].y);
+            else ans[-b[i].id]-=BA.query(b[i].y);
+        }
+    for(int i=0;i<(int)b.size();i++)
+        if(b[i].op) BA.add(b[i].y,-b[i].op);
+    return;
+}
+int tot;
+map<int,vector<pair<int,int>>>mp;
+void init(int n)
+{
+    for(int i=4;(long long)i*(i-1)/2<=n;i++)
+    {
+        long long val=i;
+        for(int j=2;j<=i/2;j++)
+        {
+            val*=(i-j+1);
+            val/=j;
+            if(val>n) break;
+            mp[val].emplace_back(i,j);
         }
     }
-    int ans=0;
-    for(int i=1;i<n;i++)
-        if(gcd(a[i],a[i+1])==1) ans++;
-    ans-=min(c2,k)*2,k-=min(c2,k);
-    sort(len.begin(),len.end());
-    for(int l:len)
-        if(k>=l) ans-=l+1,k-=l;
-        else if(k) ans-=k,k=0;
-    ans-=min(c1,k),k-=min(c1,k);
-    cout<<ans<<"\n";
+    for(auto &[val,pos]:mp)
+    {
+        int m=pos.size();
+        for(int s=1;s<(1<<m);s++)
+        {
+            int mxx=0,mxy=0,f=-1;
+            for(int i=0;i<m;i++)
+                if((s>>i)&1)
+                {
+                    mxx=max(mxx,pos[i].first);
+                    mxy=max(mxy,pos[i].second);
+                    f=-f;
+                }
+            a[++tot]={f,val,mxx,mxy,0};
+        }
+    }
     return;
 }
 int main()
 {
     ios::sync_with_stdio(false);
     cin.tie(nullptr),cout.tie(nullptr);
-    int T;
-    cin>>T;
-    while(T--)
-        solve();
+    int q;
+    cin>>q;
+    init(1e9);
+    for(int t=1;t<=q;t++)
+    {
+        int l,r,n,m;
+        cin>>l>>r>>n>>m;
+        if(n+1<=r)
+        {
+            a[++tot]={0,max(l,n+1)-1,n,m,-t};
+            a[++tot]={0,r,n,m,t};
+        }
+        ans[t]=max(0,min(n,r)-l+1);
+    }
+    sort(a+1,a+tot+1,[&](const Node &a,const Node &b){return a.val<b.val||(a.val==b.val&&abs(a.op)>abs(b.op));});
+    cdq(1,tot);
+    for(int i=1;i<=q;i++)
+        cout<<ans[i]<<"\n";
     return 0;
 }

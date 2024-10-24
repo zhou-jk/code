@@ -12,13 +12,18 @@
                 "'${file}'",
                 "-o",
                 "'${fileDirname}\\${fileBasenameNoExtension}.exe'",
-                "-std=c++17",
-                "-O2",
+                "-std=gnu++20",
                 "-Wall",
+                "-Wextra",
+                "-Wshadow",
+                "-pedantic",
+                "-Wformat=2",
+                "-fno-ms-extensions",
                 "'-Wl,--stack=214749647'",
                 "-fsanitize=undefined",
                 "-fsanitize-undefined-trap-on-error",
-                "-D_GLIBCXX_DEBUG"
+                "-D_GLIBCXX_DEBUG",
+                "-D_GLIBCXX_DEBUG_PEDANTIC"
             ],
             "options": {
                 "cwd": "C:\\Program Files (x86)\\Dev-Cpp\\MinGW64\\bin"

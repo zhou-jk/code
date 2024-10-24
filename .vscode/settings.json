@@ -117,6 +117,9 @@
         "stdlib.h": "c",
         "stdbool.h": "c",
         "sort.h": "c",
-        "time.h": "c"
+        "time.h": "c",
+        "manalysis.h": "c",
+        "assert.h": "c",
+        "stdfloat": "cpp"
     }
 }

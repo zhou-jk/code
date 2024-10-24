@@ -2,8 +2,9 @@
 #include<cstdio>
 #include<vector>
 #include<chrono>
+#include<random>
 using namespace std;
-const int N=100005;
+const int N=1000005;
 const unsigned long long mask=chrono::steady_clock::now().time_since_epoch().count();
 const unsigned long long S=1;
 unsigned long long shift(unsigned long long x)
@@ -29,40 +30,27 @@ void dfs(int u,int father)
     }
     return;
 }
-void solve()
-{
-    scanf("%d",&n);
-    for(int i=1;i<=n;i++)
-        G[i].clear();
-    for(int i=1;i<n;i++)
-    {
-        int x,y;
-        scanf("%d%d",&x,&y);
-        G[x].push_back(y);
-        G[y].push_back(x);
-    }
-    dfs(1,0);
-    long long s1=f[1];
-    for(int i=1;i<=n;i++)
-        G[i].clear();
-    for(int i=1;i<n;i++)
-    {
-        int x,y;
-        scanf("%d%d",&x,&y);
-        G[x].push_back(y);
-        G[y].push_back(x);
-    }
-    dfs(1,0);
-    long long s2=f[1];
-    if(s1==s2) printf("Isomorphism\n");
-    else printf("No\n");
-    return;
-}
 int main()
 {
-    int T;
-    scanf("%d",&T);
-    while(T--)
-        solve();
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr),cout.tie(nullptr);
+    cin>>n;
+    for(int i=1;i<=n;i++)
+        G[i].clear();
+    for(int i=1;i<n;i++)
+    {
+        int x,y;
+        cin>>x>>y;
+        G[x].push_back(y);
+        G[y].push_back(x);
+    }
+    dfs(1,0);
+    vector<unsigned long long>val;
+    for(int i=1;i<=n;i++)
+        val.emplace_back(f[i]);
+    sort(val.begin(),val.end());
+    val.erase(unique(val.begin(),val.end()),val.end());
+    int ans=val.size();
+    cout<<ans;
     return 0;
 }

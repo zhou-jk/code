@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <cstdio>
 #include <cstring>
+#include <cassert>
 #include <queue>
 #include <map>
 #include <vector>
@@ -17,6 +18,17 @@ public:
     BigInteger(const char *str)
     {
         *this = string(str);
+    }
+
+    operator long long() const {
+        long long value = 0;
+        for (int i = 0; i < (int) val_.size(); i++) {
+            value = value * width_ + val_[i];
+        }
+        if (sign_ == -1) {
+            value = -value;
+        }
+        return value;
     }
 
     // assignment operators
@@ -77,9 +89,6 @@ public:
     BigInteger operator*(const BigInteger &) const;
     BigInteger operator/(const BigInteger &) const;
     BigInteger operator%(const BigInteger &) const;
-    BigInteger operator^(const BigInteger &) const;
-    BigInteger operator&(const BigInteger &) const;
-    BigInteger operator|(const BigInteger &) const;
 
     // compound assignment operators
     BigInteger &operator+=(const BigInteger &obj)
@@ -139,10 +148,6 @@ protected:
     BigInteger &sub(const BigInteger &);
     BigInteger &mul(const BigInteger &, const BigInteger &);
     BigInteger &div(BigInteger &, BigInteger, div_type = division);
-    BigInteger &xor_(const BigInteger &);
-    BigInteger &and_(const BigInteger &);
-    BigInteger &or_(const BigInteger &);
-    vector<int> divide() const;
 
 private:
     int sign_;
@@ -369,47 +374,4 @@ BigInteger &BigInteger::div(BigInteger &a, BigInteger b, div_type typ)
         b.val_.erase(b.val_.begin());
     }
     return typ == division ? delZero() : a;
-}
-vector<int> BigInteger::divide() const
-{
-    int len = val_.size() * __lg(base_);
-    vector<BigInteger> pw(len + 1);
-    pw[0] = 1;
-    for (int i = 1; i <= len; i++)
-        pw[i] = pw[i - 1] + pw[i - 1];
-    BigInteger tmp = *this;
-    vector<int> a(len + 1);
-    for (int i = len; i >= 0; i--)
-    {
-        if (tmp.cmp(pw[i]) > 0)
-            tmp -= pw[i], a[i] = 1;
-        else
-            a[i] = 0;
-    }
-    while (!a.empty() && a.back() == 0)
-        a.pop_back();
-    return a;
-}
-BigInteger BigInteger::operator^(const BigInteger &obj) const
-{
-    vector<int> a = divide(), b = obj.divide();
-    int len = max(a.size(), b.size());
-    vector<int> c(len);
-    vector<BigInteger> pw(len);
-    pw[0] = 1;
-    for (int i = 1; i < len; i++)
-        pw[i] = pw[i - 1] + pw[i - 1];
-    for (int i = 0; i < len; i++)
-    {
-        c[i] = 0;
-        if (i < (int)a.size())
-            c[i] ^= a[i];
-        if (i < (int)b.size())
-            c[i] ^= b[i];
-    }
-    BigInteger res = 0;
-    for (int i = 0; i < len; i++)
-        if (c[i])
-            res += pw[i];
-    return res;
 }
