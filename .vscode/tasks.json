@@ -23,7 +23,7 @@
                 "-fsanitize=undefined",
                 "-fsanitize-undefined-trap-on-error",
                 "-D_GLIBCXX_DEBUG",
-                "-D_GLIBCXX_DEBUG_PEDANTIC"
+                "-D_GLIBCXX_DEBUG_PEDANTIC",
             ],
             "options": {
                 "cwd": "C:\\Program Files (x86)\\Dev-Cpp\\MinGW64\\bin"

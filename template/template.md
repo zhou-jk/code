@@ -992,6 +992,18 @@ Poly qpow(const Poly &F,const string &k)
 ---
 
 ```cpp
+Poly mul_t(const Poly &g,const Poly &f)
+{
+    assert(g.size()<=f.size());
+    int m=g.size()-1;
+    Poly gt=g;
+    reverse(gt.begin(),gt.end());
+    Poly h=gt*f;
+    Poly res(f.size());
+    for(int i=0;i<(int)f.size();i++)
+        res[i]=h[m+i];
+    return res;
+}
 Poly poly_multiple_point_evaluation(const Poly &F,const Poly &A)
 {
     Poly f=F,a=A;
@@ -2986,13 +2998,15 @@ int main()
 struct Trajan_SCC
 {
     int n;
+    vector<int>G[N];
     Trajan_SCC(int _n=0):n(_n){}
     void init(int _n)
     {
+        for(int i=1;i<=n;i++)
+            G[i].clear();
         n=_n;
         return;
     }
-    vector<int>G[N];
     void add_edge(int u,int v)
     {
         G[u].emplace_back(v);
@@ -3059,13 +3073,15 @@ struct Trajan_SCC
 struct Kosaraju_SCC
 {
     int n;
+    bitset<N>mp[N],rmp[N];
     Kosaraju_SCC(int _n=0):n(_n){}
     void init(int _n)
     {
+        for(int i=1;i<=n;i++)
+            mp[i].reset(),rmp[i].reset();
         n=_n;
         return;
     }
-    bitset<N>mp[N],rmp[N];
     vector<int>block[N];
     int bel[N],tot;
     void add_edge(int u,int v)
@@ -3125,13 +3141,15 @@ struct Kosaraju_SCC
 struct Tarjan_Cut
 {
     int n;
+    vector<int>G[N];
     Tarjan_Cut(int _n=0):n(_n){}
     void init(int _n)
     {
+        for(int i=1;i<=n;i++)
+            G[i].clear();
         n=_n;
         return;
     }
-    vector<int>G[N];
     void add_edge(int u,int v)
     {
         G[u].emplace_back(v);
@@ -3183,13 +3201,15 @@ struct Tarjan_Cut
 struct Tarjan_Bridge
 {
     int n,m;
+    vector<pair<int,int>>G[N];
     Tarjan_Bridge(int _n=0):n(_n),m(0){}
     void init(int _n)
     {
+        for(int i=1;i<=n;i++)
+            G[i].clear();
         n=_n,m=0;
         return;
     }
-    vector<pair<int,int>>G[N];
     pair<int,int>edge[M];
     void add_edge(int u,int v)
     {
@@ -3242,13 +3262,15 @@ struct Tarjan_Bridge
 struct Trajan_EBC
 {
     int n,m;
+    vector<pair<int,int>>G[N];
     Trajan_EBC(int _n=0):n(_n),m(0){}
     void init(int _n)
     {
+        for(int i=1;i<=n;i++)
+            G[i].clear();
         n=_n,m=0;
         return;
     }
-    vector<pair<int,int>>G[N];
     void add_edge(int u,int v)
     {
         m++;
@@ -3320,12 +3342,14 @@ struct Trajan_PBC
 {
     int n;
     Trajan_PBC(int _n=0):n(_n){}
+    vector<int>G[N];
     void init(int _n)
     {
+        for(int i=1;i<=n;i++)
+            G[i].clear();
         n=_n;
         return;
     }
-    vector<int>G[N];
     void add_edge(int u,int v)
     {
         G[u].emplace_back(v);
@@ -5592,6 +5616,8 @@ struct Hopcroft_Karp
     void init(int _n,int _m)
     {
         n=_n,m=_m;
+        for(int i=1;i<=n;i++)
+            g[i].clear();
         return;
     }
     void add_edge(int u,int v)

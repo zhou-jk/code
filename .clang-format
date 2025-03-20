@@ -1,0 +1,11 @@
+---
+# Use Google's style as the base
+BasedOnStyle: Google
+
+# Your custom overrides
+ColumnLimit: 110
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+# Add any other customizations here
+---
