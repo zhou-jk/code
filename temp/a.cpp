@@ -12,7 +12,7 @@
 #include <string>
 #include <iomanip>
 
-// 计时助手类
+// Timer helper class
 class Timer {
 public:
     Timer() : mStart(std::chrono::high_resolution_clock::now()) {}
@@ -21,7 +21,7 @@ public:
         mStart = std::chrono::high_resolution_clock::now();
     }
     
-    // 返回经过的毫秒数
+    // Returns elapsed milliseconds
     double elapsedMs() const {
         auto now = std::chrono::high_resolution_clock::now();
         return std::chrono::duration<double, std::milli>(now - mStart).count();
@@ -31,7 +31,7 @@ private:
     std::chrono::time_point<std::chrono::high_resolution_clock> mStart;
 };
 
-// 自定义内存分配器，用于三角化测试
+// Custom memory allocator for triangulation tests
 class TestAllocator : public GrEagerVertexAllocator {
 public:
     TestAllocator() : fVertexAllocSize(0) {}
@@ -52,12 +52,12 @@ private:
     size_t fVertexAllocSize;
 };
 
-// 测试类 - 对特定路径进行多次三角化并测量性能
+// Test class - performs multiple triangulations on a specific path and measures performance
 class TriangulatorTest {
 public:
     explicit TriangulatorTest(const char* testName) : fTestName(testName) {}
     
-    // 运行测试
+    // Run the test
     void runTest(const SkPath& path, float tolerance, int iterations) {
         TestAllocator allocator;
         std::vector<double> timings;
@@ -70,7 +70,7 @@ public:
             timings.push_back(timer.elapsedMs());
         }
         
-        // 计算统计数据
+        // Calculate statistics
         double total = 0.0;
         double min = timings[0];
         double max = timings[0];
@@ -83,7 +83,7 @@ public:
         
         double avg = total / iterations;
         
-        // 计算标准差
+        // Calculate standard deviation
         double variance = 0.0;
         for (double time : timings) {
             double diff = time - avg;
@@ -91,13 +91,13 @@ public:
         }
         double stdDev = std::sqrt(variance / iterations);
         
-        // 输出结果
-        std::cout << "测试: " << fTestName << std::endl;
-        std::cout << "  迭代次数: " << iterations << std::endl;
-        std::cout << "  平均时间: " << std::fixed << std::setprecision(3) << avg << " ms" << std::endl;
-        std::cout << "  最小时间: " << min << " ms" << std::endl;
-        std::cout << "  最大时间: " << max << " ms" << std::endl;
-        std::cout << "  标准差: " << stdDev << " ms" << std::endl;
+        // Output results
+        std::cout << "Test: " << fTestName << std::endl;
+        std::cout << "  Iterations: " << iterations << std::endl;
+        std::cout << "  Average time: " << std::fixed << std::setprecision(3) << avg << " ms" << std::endl;
+        std::cout << "  Minimum time: " << min << " ms" << std::endl;
+        std::cout << "  Maximum time: " << max << " ms" << std::endl;
+        std::cout << "  Standard deviation: " << stdDev << " ms" << std::endl;
         std::cout << "-----------------------------------" << std::endl;
     }
     
@@ -106,10 +106,10 @@ private:
 };
 
 int main(int argc, char* argv[]) {
-    // 设置测试参数
-    int iterations = 100; // 默认迭代次数
+    // Set test parameters
+    int iterations = 100; // Default iteration count
     
-    // 解析命令行参数
+    // Parse command line arguments
     for (int i = 1; i < argc; ++i) {
         if (std::string(argv[i]) == "--iterations" && i + 1 < argc) {
             iterations = std::stoi(argv[i + 1]);
@@ -117,11 +117,11 @@ int main(int argc, char* argv[]) {
         }
     }
     
-    std::cout << "开始三角化性能测试..." << std::endl;
-    std::cout << "迭代次数: " << iterations << std::endl;
+    std::cout << "Starting triangulation performance tests..." << std::endl;
+    std::cout << "Iterations: " << iterations << std::endl;
     std::cout << "====================================" << std::endl;
     
-    // 测试简单形状
+    // Test simple shapes
     std::vector<const char*> simpleShapes = {"rect", "roundrect", "circle", "star", "complex"};
     
     for (const char* shapeName : simpleShapes) {
@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
         test.runTest(testPath.fPath, 0.25f, iterations);
     }
     
-    // 测试不同精度
+    // Test different tolerances
     std::vector<float> tolerances = {0.1f, 0.25f, 0.5f, 1.0f};
     SimpleTestPath complexPath = CreateSimplePath("complex");
     
@@ -140,7 +140,7 @@ int main(int argc, char* argv[]) {
         test.runTest(complexPath.fPath, tolerance, iterations);
     }
     
-    // 测试星形
+    // Test star shape
     TriangulatorTest starTest("star_150_50");
     SkPath starPath;
     const float cx = 250;
@@ -165,7 +165,7 @@ int main(int argc, char* argv[]) {
     
     starTest.runTest(starPath, 0.25f, iterations);
     
-    // 测试SVG (如果资源可用)
+    // Test SVGs (if resources are available)
     std::vector<const char*> svgTests = {"scan", "dynamic_island", "star_of_david"};
     
     for (const char* svgName : svgTests) {
@@ -177,10 +177,10 @@ int main(int argc, char* argv[]) {
             TriangulatorTest test(testName.c_str());
             test.runTest(svgPath, 0.25f, iterations);
         } else {
-            std::cout << "跳过SVG测试 '" << svgName << "': 资源不可用或路径为空" << std::endl;
+            std::cout << "Skipping SVG test '" << svgName << "': Resource unavailable or path is empty" << std::endl;
         }
     }
     
-    std::cout << "所有测试完成！" << std::endl;
+    std::cout << "All tests completed!" << std::endl;
     return 0;
 } 
