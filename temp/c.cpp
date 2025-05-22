@@ -1,230 +1,206 @@
-#include<bits/stdc++.h>
-using namespace std;
-constexpr int N=2000005;
-int n,m;
-int out[N],in[N];
-vector<int>G[N],E[N];
-vector<int>posin,posout,posinout;
-bool vis[N];
-vector<pair<int,int>>edge;
-int cnt;
-void dfs(int u)
-{
-//    cerr<<"now"<<u<<"\n";
-    for(int v:G[u])
-    {
-//        cerr<<"find"<<u<<" "<<v<<" "<<vis[v]<<"\n";
-        if(!vis[v])
-        {
-            int ret=cnt;
-            vector<int>pos;
-            for(int w:E[v])
-            {
-                if(!vis[w])
-                {
-                    ret--;
-                }
-            }
-            if(ret==0) return;
-            for(int w:E[v])
-            {
-                if(!vis[w])
-                {
-                    vis[w]=true;
-//                    cerr<<"flag"<<w<<"\n";
-                    cnt--;
-                }
-            }
-            vis[v]=true;
-            while(!posin.empty()&&vis[posin.back()]) posin.pop_back();
-            assert(!posin.empty());
-            int w=posin.back();
-//            cerr<<"to"<<v<<" "<<w<<"\n";
-            vis[w]=true;
-            cnt--;
-            edge.emplace_back(v,w);
-            in[w]++,out[v]++;
-            dfs(w);
-        }
-    }
-    return;
-}
-bool book[N];
-void solve()
-{
-    cin>>n>>m;
-    for(int i=1;i<=n*2;i++)
-        out[i]=in[i]=0,G[i].clear(),E[i].clear(),vis[i]=false;
-    for(int i=1;i<=m;i++)
-    {
-        int u,v;
-        cin>>u>>v;
-        G[u].emplace_back(v);
-        E[v].emplace_back(u);
-        out[u]++,in[v]++;
-    }
-    int p=0,q=0;
-    posin.clear(),posout.clear(),posinout.clear();
-    for(int i=1;i<=n*2;i++)
-    {
-        if(in[i]==0&&out[i]==0) p++,q++,posinout.emplace_back(i); 
-        else if(in[i]==0) posin.emplace_back(i),p++;
-        else if(out[i]==0) posout.emplace_back(i),q++;
-    }
-    cnt=posin.size();
-    edge.clear();
-    for(int u=1;u<=n;u++)
-        if(!vis[u]&&in[u]==0&&out[u]>0)
-        {
-//            cerr<<"Try"<<u<<"\n";
-            dfs(u);
-        }
-    posin.clear(),posout.clear(),posinout.clear();
-    for(int i=1;i<=n*2;i++)
-    {
-        if(in[i]==0&&out[i]==0) posinout.emplace_back(i); 
-        else if(in[i]==0) posin.emplace_back(i);
-        else if(out[i]==0) posout.emplace_back(i);
-    }
-    while(!posin.empty()&&!posinout.empty())
-    {
-        while(!posinout.empty()&&(in[posinout.back()]||out[posinout.back()])) posinout.pop_back();
-        if(posinout.empty()) break;
-        while(!posin.empty()&&in[posin.back()]) posin.pop_back();
-        if(posin.empty()) break;
-        int u=posinout.back(),v=posin.back();
-        posinout.pop_back();
-        posin.pop_back();
-        edge.emplace_back(u,v);
-        out[u]++,in[v]++;
-        posin.push_back(u);
-    }
-    while(!posinout.empty()&&!posout.empty())
-    {
-        while(!posinout.empty()&&(in[posinout.back()]||out[posinout.back()])) posinout.pop_back();
-        if(posinout.empty()) break;
-        while(!posout.empty()&&out[posout.back()]) posout.pop_back();
-        if(posout.empty()) break;
-        int u=posout.back(),v=posinout.back();
-        posout.pop_back();
-        posinout.pop_back();
-        edge.emplace_back(u,v);
-        out[u]++,in[v]++;
-        posout.push_back(u);
-    }
-//    cerr<<"ed"<<edge.size()<<"\n";
-//    cerr<<"out"<<in[3]<<" "<<posin.size()<<"\n";
-    while(!posin.empty()&&!posout.empty())
-    {
-        while(!posin.empty()&&in[posin.back()]) posin.pop_back();
-        if(posin.empty()) break;
-        while(!posout.empty()&&out[posout.back()]) posout.pop_back();
-        if(posout.empty()) break;
-        int u=posout.back(),v=posin.back();
-        posout.pop_back();
-        posin.pop_back();
-        edge.emplace_back(u,v);
-        out[u]++,in[v]++;
-    }
-    while(!posin.empty())
-    {
-        while(!posin.empty()&&in[posin.back()]) posin.pop_back();
-        if(posin.empty()) break;
-        int u=1,v=posin.back();
-        posin.pop_back();
-        edge.emplace_back(u,v);
-        out[u]++,in[v]++;
-//        cerr<<"Add"<<u<<" "<<v<<'\n';
-    }
-    while(!posout.empty())
-    {
-        while(!posout.empty()&&out[posout.back()]) posout.pop_back();
-        if(posout.empty()) break;
-        int u=posout.back(),v=1;
-        posout.pop_back();
-        edge.emplace_back(u,v);
-        out[u]++,in[v]++;
-    }
-//    cerr<<"sss"<<posin.size()<<" "<<posout.size()<<"\n";
-    vector<int>pos;
-    fill(book+1,book+n*2+1,false);
-    for(int u:posinout)
-        if(in[u]==0&&out[u]==0) pos.emplace_back(u),book[u]=true;
-    if(!pos.empty())
-    {
-        int ppp=0;
-        for(int i=1;i<=n*2;i++)
-            if(!book[i]) ppp=i;
-        if(ppp) pos.emplace_back(ppp);
-        for(int i=0;i<(int)pos.size();i++)
-        {
-            int u=pos[i],v=pos[(i+1)%(int)pos.size()];
-            edge.emplace_back(u,v);
-            out[u]++,in[v]++;
-        }
-    }
-    int k=edge.size();
-    assert(k==max(p,q));
-//    cerr<<"ans"<<max(p,q)<<"\n"; 
-    cout<<k<<"\n";
-    for(auto [u,v]:edge)
-        cout<<u<<" "<<v<<"\n";
-    return;
-}
-int main()
-{
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr),cout.tie(nullptr);
-    int T;
-    cin>>T;
-    while(T--)
-        solve();
-    return 0;
-}
+/*************************************************************************
+ *                                                                       *
+ *                    XIX Olimpiada Informatyczna                        *
+ *                                                                       *
+ *   Zadanie:           Licytacja                                        *
+ *   Autor:             Alan Kutniewski                                  *
+ *   Opis:              Biblioteka interaktywna                          *
+ *                                                                       *
+ *************************************************************************/
 
 /*
-5
-4 4
-1 5
-2 5
-3 5
-4 5
-4 4
-1 5
-2 6
-3 7
-4 8
-4 0
-4 4
-1 6
-2 5
-3 8
-4 7
-
-4 2
-1 5
-2 5
-
-1
-5 4
-1 7
-1 10
-3 6
-1 8
-
-1
-3 4
-3 4
-1 5
-2 5
-3 5
-
-3
-1 0
-1 1
-1 2
-2 3
-1 3
-1 4
-2 3
+    Mozliwe strategie:
+    S_LOSOWA: gra losowo, dopoki stawka+pula < 1/2 n
+    S_POPTYMALNA: gra optymalnie, ale myli sie w 10% przypadkow dopoki stawka+pula < 1/2 n
+    S_OPTYMALNA: gra optymalnie
+    S_OCEN: strategia ocen, wszystko losowe
 */
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+/* Inicjuje gre, zwraca liczbe n */
+int inicjuj();
+
+/* Wykonuje ruch gracza */
+void alojzy(int x);
+
+/* Zwraca ruch Bajtazara */
+int bajtazar();
+
+namespace __cliclib {
+#define S_LOSOWA 0
+#define S_POPTYMALNA 1
+#define S_OPTYMALNA 2
+#define S_OCEN 3
+
+#define OK 1
+#define ERR 0
+
+#define MAXN 30000
+#define MAX_IND 250
+
+#define WYGRYWAJACA 1
+#define PRZEGRYWAJACA 2
+#define NIEZNANA 0
+
+#define MAGIC_IN_SUM 74967
+#define MAGIC_OUT 756396726
+
+#define ALOJZY 1
+#define BAJTAZAR 2
+
+#define PAS 1
+#define P2 2
+#define P3 3
+
+static int n;                                  // dane
+static int strategia;                          // strategia wykorzystywana przez biblioteke
+static int pozycja[MAXN + 1][MAX_IND];         // okresla, czy pozycja jest wygrywajaca czy przegrywajaca
+static int optymalny_ruch[MAXN + 1][MAX_IND];  // okresla jaki ruch jest optymalny
+static int indeks_stawki[MAXN + 1];  // zamienia wartosc stawki na indeks w tablicach pozycja i optymalny_ruch
+static int zainicjowane = 0;         // czy zostalo juz wywolana funkcja inicjuj
+static int pula, stawka;             // aktualna wartosc puli i stawki
+static int kolej;                    // aktualny zawodnik
+static int randval;                  // bardzo pseudo losowa wartosc
+static int ruchocenval = 2;          // zmienna na kolejny ruch ocen
+
+// Zmienia i zwraca pseudo losowego inta
+static int randint() {
+    randval = (randval + 3) * (randval + 7);
+    randval %= 100;
+    return randval;
+}
+
+// Zwraca kolejno Podwojenie, Potrojenie, Pas, Podwojenie, ...
+static int ruch_ocen() {
+    ruchocenval = (ruchocenval + 1) % 3;
+    return PAS + ruchocenval;
+}
+
+// Wypelnia tablice indeks_stawki
+static void oblicz_indeksy(int maxn) {
+    int aind = 0;
+    int i, j;
+    for (i = 1; i <= maxn; i *= 2) {
+        for (j = 1; i * j <= maxn; j *= 3) {
+            indeks_stawki[i * j] = aind++;
+        }
+    }
+}
+
+// Konczy prace z danym wynikiem i komentarzem.
+static void koncz(int wynik, const char *komentarz) {
+    printf("%d\n", MAGIC_OUT);  // pierwsza linia: magic out
+    printf("%d\n", wynik);      // druga linia: wynik
+    printf("%s\n", komentarz);  // trzecia linia: komentarz
+    exit(0);
+}
+
+// sprawdza rekurencyjnie drzewo gry spamietujac wyniki, ustawia tez optymalny ruch
+static int sprawdz_pozycje(int pula_poz, int stawka_poz) {
+    if (pula_poz + stawka_poz >= n) return PRZEGRYWAJACA;
+    int stawka_ind = indeks_stawki[stawka_poz];
+    if (pozycja[pula_poz][stawka_ind] != NIEZNANA) return pozycja[pula_poz][stawka_ind];
+    int rPAS = sprawdz_pozycje(pula_poz + stawka_poz, 1);
+    int rP2 = sprawdz_pozycje(pula_poz, stawka_poz * 2);
+    int rP3 = sprawdz_pozycje(pula_poz, stawka_poz * 3);
+    if (rPAS == PRZEGRYWAJACA) {
+        optymalny_ruch[pula_poz][stawka_ind] = PAS;
+        pozycja[pula_poz][stawka_ind] = WYGRYWAJACA;
+        return WYGRYWAJACA;
+    }
+    if (rP2 == PRZEGRYWAJACA) {
+        optymalny_ruch[pula_poz][stawka_ind] = P2;
+        pozycja[pula_poz][stawka_ind] = WYGRYWAJACA;
+        return WYGRYWAJACA;
+    }
+    if (rP3 == PRZEGRYWAJACA) {
+        optymalny_ruch[pula_poz][stawka_ind] = P3;
+        pozycja[pula_poz][stawka_ind] = WYGRYWAJACA;
+        return WYGRYWAJACA;
+    }
+    pozycja[pula_poz][stawka_ind] = PRZEGRYWAJACA;
+    optymalny_ruch[pula_poz][stawka_ind] = PAS + randint() % 3;
+    return PRZEGRYWAJACA;
+}
+
+// Generuj ruch Bajtazara, biorac pod uwage strategie
+static int generuj_ruch() {
+    sprawdz_pozycje(pula, stawka);
+    if ((strategia != S_OCEN && pula + stawka >= (n * 5 / 7)) || strategia == S_OPTYMALNA ||
+        (strategia == S_POPTYMALNA && randint() % 10 != 3)) {
+        return optymalny_ruch[pula][indeks_stawki[stawka]];
+    }
+    if (strategia == S_OCEN) {
+        return ruch_ocen();
+    }
+    return PAS + randint() % 3;
+}
+
+// Inicjuje gre pomiedzy Alojzym i Bajtazarem
+int inicjuj() {
+    if (zainicjowane != 0) {
+        koncz(ERR, "Program zawodnika moze wolac funkcje inicjuj tylko raz.");
+    }
+    zainicjowane = 1;
+    int magic;
+    scanf("%d%d%d", &n, &strategia, &magic);
+    if (n < 1 || n > MAXN || strategia < 0 || strategia > 3 || n + strategia + magic != MAGIC_IN_SUM) {
+        koncz(ERR, "Program zawodnika nie moze wczytywac zadanego inputu.");
+    }
+    pula = 0;
+    stawka = 1;
+    kolej = ALOJZY;
+    oblicz_indeksy(n);
+    return n;
+}
+
+// Aktualizuje pule i stawke, biorac pod uwage ruch X
+static void wykonaj_ruch(int x) {
+    if (x == PAS) {
+        pula = pula + stawka;
+        stawka = 1;
+    } else if (x == P2) {
+        stawka = stawka * 2;
+    } else if (x == P3) {
+        stawka = stawka * 3;
+    }
+}
+
+// Wykonuje ruch gracza
+void alojzy(int x) {
+    if (zainicjowane == 0) koncz(ERR, "Program zawodnika nie wywolal funkcji inicjuj.");
+    if (x != PAS && x != P2 && x != P3) {
+        koncz(ERR, "Nieprawidlowy ruch Alojzego.");
+    }
+    if (kolej != ALOJZY) {
+        koncz(ERR, "Ruch Alojzego bez wczesniejszego ruchu Bajtazara.");
+    }
+    if (pula + stawka >= n) {
+        koncz(ERR, "Suma puli i stawki przekroczyla n.");
+    }
+    kolej = BAJTAZAR;
+    wykonaj_ruch(x);
+}
+
+// Generuje i wykonuje ruch Bajtazara
+int bajtazar() {
+    if (zainicjowane == 0) koncz(ERR, "Program zawodnika nie wywolal funkcji inicjuj.");
+    if (kolej != BAJTAZAR) {
+        koncz(ERR, "Pytanie o ruch Bajtocego przed wykonaniem ruchu Alojzego.");
+    }
+    if (pula + stawka >= n) {
+        koncz(OK, "");
+    }
+    int x = generuj_ruch();
+    kolej = ALOJZY;
+    wykonaj_ruch(x);
+    return x;
+}
+
+}  // namespace __cliclib
+
+int inicjuj() { return __cliclib::inicjuj(); }
+void alojzy(int x) { return __cliclib::alojzy(x); }
+int bajtazar() { return __cliclib::bajtazar(); }

@@ -18,6 +18,7 @@
                 "-Wshadow",
                 "-pedantic",
                 "-Wformat=2",
+                "-O0",
                 "-fno-ms-extensions",
                 "'-Wl,--stack=214749647'",
                 "-fsanitize=undefined",
