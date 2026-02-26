@@ -120,6 +120,12 @@
         "time.h": "c",
         "manalysis.h": "c",
         "assert.h": "c",
-        "stdfloat": "cpp"
+        "stdfloat": "cpp",
+        "climits": "cpp",
+        "rope": "cpp",
+        "slist": "cpp"
+    },
+    "files.watcherExclude": {
+        "**/target": true
     }
 }

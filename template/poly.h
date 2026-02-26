@@ -38,7 +38,7 @@ int getinv(int x)
 typedef vector<int> Poly;
 int gw[(1<<21)+1];
 vector<int>inv;
-void init(int _n)
+void init_poly(int _n)
 {
     static int n=1;
     if(_n<n) return;
@@ -119,7 +119,7 @@ void dft(Poly &F,int _n)
 {
     int n=1;
     while(n<_n) n<<=1;
-    init(n);
+    init_poly(n);
     F.resize(n);
     vector<unsigned long long>f(n);
     for(int i=0;i<n;i++)
@@ -148,7 +148,7 @@ void idft(Poly &F,int _n)
 {
     int n=1;
     while(n<_n) n<<=1;
-    init(n);
+    init_poly(n);
     F.resize(n);
     vector<unsigned long long>f(n);
     for(int i=0;i<n;i++)
@@ -335,7 +335,7 @@ Poly poly_integration(const Poly &G)
 {
     Poly g=G;
     int n=g.size()-1;
-    init(n+2);
+    init_poly(n+2);
     Poly f(n+2);
     for(int i=1;i<=n+1;i++)
         f[i]=(long long)g[i-1]*inv[i]%MOD;
@@ -451,6 +451,30 @@ Poly mul_t(const Poly &g,const Poly &f)
     for(int i=0;i<(int)f.size();i++)
         res[i]=h[m+i];
     return res;
+}
+Poly& operator+=(Poly &a,const Poly &b)
+{
+    return a=a+b;
+}
+Poly& operator-=(Poly &a,const Poly &b)
+{
+    return a=a-b;
+}
+Poly& operator*=(Poly &a,const Poly &b)
+{
+    return a=a*b;
+}
+Poly& operator+=(Poly &a,const int &x)
+{
+    return a=a+x;
+}
+Poly& operator-=(Poly &a,const int &x)
+{
+    return a=a-x;
+}
+Poly& operator*=(Poly &a,const int &x)
+{
+    return a=a*x;
 }
 Poly poly_multiple_point_evaluation(const Poly &F,const Poly &A)
 {
